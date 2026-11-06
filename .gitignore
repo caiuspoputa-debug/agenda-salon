@@ -1,0 +1,9 @@
+private/
+build/
+__pycache__/
+*.jks
+*.keystore
+*.p12
+*.apk
+*.tar.gz
+.env*

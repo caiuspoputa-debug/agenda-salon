@@ -1,0 +1,6 @@
+{
+  "origin": "https://agenda-salon-activare-caius.peachywave5.chatgpt.site",
+  "spki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEXpA7Oh3P60VshbVTIHBI3PW1apFHBF60wIuFFl4TGk3mz0U4gb5z437vwGf3jh6IQ9lZvIY2XvsA3QNrhJjf3Q==",
+  "issuer": "ro.salon.agenda.test.activation.v1",
+  "audience": "ro.salon.agenda.test.activation"
+}
