@@ -11,7 +11,7 @@ import tempfile
 
 sys.stdout.reconfigure(encoding='utf-8')
 base = Path(__file__).resolve().parents[1]
-source = base / 'app/src/main/java/ro/salon/agenda/test/MainActivity.java'
+source = base / 'app/src/main/java/ro/caiuspoputa/agendasalon/MainActivity.java'
 main = source.read_text(encoding='utf-8')
 java = Path('C:/Program Files/Android/Android Studio/jbr/bin')
 
@@ -48,7 +48,7 @@ public Intent(String action){this.action=action;}public Intent addCategory(Strin
 }'''
 }
 methods = '\n'.join(method(name) for name in ('isHome', 'trustedPage', 'isLogoImageChooser', 'showLogoFileChooser', 'completeLogoPicker', 'handleLogoImageResult'))
-stubs['ro/salon/agenda/test/NativeLogoPickerTest.java'] = '''package ro.salon.agenda.test;
+stubs['ro/caiuspoputa/agendasalon/NativeLogoPickerTest.java'] = '''package ro.caiuspoputa.agendasalon;
 import java.util.*;import android.net.Uri;import android.content.Intent;import android.content.ClipData;
 interface ValueCallback<T>{void onReceiveValue(T value);}
 final class WebView {String url="file:///android_asset/index.html";String getUrl(){return url;}}
@@ -124,4 +124,4 @@ with tempfile.TemporaryDirectory(prefix='salon-native-logo-picker-') as director
     classes = root / 'classes'
     subprocess.run([str(java / 'javac.exe'), '-encoding', 'UTF-8', '-d', str(classes),
                     *map(str, root.rglob('*.java'))], check=True, timeout=30)
-    subprocess.run([str(java / 'java.exe'), '-cp', str(classes), 'ro.salon.agenda.test.NativeLogoPickerTest'], check=True, timeout=10)
+    subprocess.run([str(java / 'java.exe'), '-cp', str(classes), 'ro.caiuspoputa.agendasalon.NativeLogoPickerTest'], check=True, timeout=10)

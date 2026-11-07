@@ -14,7 +14,7 @@ import tempfile
 sys.stdout.reconfigure(encoding='utf-8')
 
 base = Path(__file__).resolve().parents[1]
-source = base / 'app/src/main/java/ro/salon/agenda/test'
+source = base / 'app/src/main/java/ro/caiuspoputa/agendasalon'
 java = Path('C:/Program Files/Android/Android Studio/jbr/bin')
 from native_update_test_support import json_runtime
 json_classes = json_runtime(base)
@@ -27,7 +27,7 @@ stubs = {
 'android/app/Activity.java': '''package android.app;public class Activity {
 public final android.content.pm.PackageManager pm=new android.content.pm.PackageManager();
 public final java.util.concurrent.ExecutorService ui=java.util.concurrent.Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"fixture-android-ui");t.setDaemon(true);return t;});
-public android.content.pm.PackageManager getPackageManager(){return pm;}public String getPackageName(){return "ro.salon.agenda.test";}
+public android.content.pm.PackageManager getPackageManager(){return pm;}public String getPackageName(){return "ro.caiuspoputa.agendasalon";}
 public void runOnUiThread(Runnable r){ui.execute(r);}public void startActivity(android.content.Intent i){throw new AssertionError("Installer must never be opened by a metadata check");}
 }''',
 'android/content/Intent.java': '''package android.content;public class Intent {
@@ -42,7 +42,7 @@ public PackageInfo getPackageInfo(String name,int flags){return installed;}publi
 public boolean canRequestPackageInstalls(){throw new AssertionError("No install permission request during metadata check");}
 }''',
 'android/content/pm/PackageInfo.java': '''package android.content.pm;public class PackageInfo {
-public String packageName="ro.salon.agenda.test",versionName="1.0.19";public int versionCode=30;
+public String packageName="ro.caiuspoputa.agendasalon",versionName="1.0.19";public int versionCode=30;
 public ApplicationInfo applicationInfo=new ApplicationInfo();public Signature[] signatures={new Signature()};public SigningInfo signingInfo=new SigningInfo();
 public long getLongVersionCode(){return versionCode;}
 }''',
@@ -53,11 +53,11 @@ public long getLongVersionCode(){return versionCode;}
 'android/os/Build.java': 'package android.os;public class Build {public static class VERSION {public static int SDK_INT=36;}}',
 'android/os/SystemClock.java': 'package android.os;public class SystemClock {public static long elapsedRealtime(){return System.nanoTime()/1000000;}}',
 'android/provider/Settings.java': 'package android.provider;public class Settings {public static final String ACTION_MANAGE_UNKNOWN_APP_SOURCES="INSTALL_PERMISSION";}',
-'ro/salon/agenda/test/UpdateApkProvider.java': '''package ro.salon.agenda.test;final class UpdateApkProvider {
+'ro/caiuspoputa/agendasalon/UpdateApkProvider.java': '''package ro.caiuspoputa.agendasalon;final class UpdateApkProvider {
 static final String MIME="application/vnd.android.package-archive";static java.io.File directory(android.app.Activity a){throw new AssertionError("No APK download during metadata check");}
 static android.net.Uri uri(android.app.Activity a,String digest){throw new AssertionError("No installer URI during metadata check");}}
 ''',
-'ro/salon/agenda/test/NativeUpdateNetworkTest.java': '''package ro.salon.agenda.test;
+'ro/caiuspoputa/agendasalon/NativeUpdateNetworkTest.java': '''package ro.caiuspoputa.agendasalon;
 import org.json.JSONObject;import java.util.concurrent.*;import java.net.*;import java.io.*;
 public final class NativeUpdateNetworkTest {
 static final class Probe {
@@ -92,7 +92,7 @@ with tempfile.TemporaryDirectory(prefix='salon-native-update-network-') as direc
     subprocess.run([str(java / 'javac.exe'), '-encoding', 'UTF-8', '-cp', str(json_classes), '-d', str(classes), *sources], check=True, timeout=30)
     results = []
     for mode in ['available', 'current', 'error']:
-        completed = subprocess.run([str(java / 'java.exe'), '-cp', str(classes) + ';' + str(json_classes), 'ro.salon.agenda.test.NativeUpdateNetworkTest', mode], check=True, text=True, encoding='utf-8', capture_output=True, timeout=77)
+        completed = subprocess.run([str(java / 'java.exe'), '-cp', str(classes) + ';' + str(json_classes), 'ro.caiuspoputa.agendasalon.NativeUpdateNetworkTest', mode], check=True, text=True, encoding='utf-8', capture_output=True, timeout=77)
         result = json.loads(completed.stdout)
         # Execute the precise MainActivity-generated callback against production
         # updates.js to ensure a native response clears its pending JS state.

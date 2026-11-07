@@ -14,7 +14,7 @@ from native_update_test_support import json_runtime
 
 sys.stdout.reconfigure(encoding='utf-8')
 base = Path(__file__).resolve().parents[1]
-source = base / 'app/src/main/java/ro/salon/agenda/test'
+source = base / 'app/src/main/java/ro/caiuspoputa/agendasalon'
 java = Path('C:/Program Files/Android/Android Studio/jbr/bin')
 json_classes = json_runtime(base)
 main = (source / 'MainActivity.java').read_text(encoding='utf-8')
@@ -34,13 +34,13 @@ assignment = next(n for n in tree.body if isinstance(n, ast.Assign) and any(isin
 namespace = {'callback': callback}
 exec(compile(ast.Module(body=[assignment], type_ignores=[]), str(fixture), 'exec'), namespace)
 stubs = namespace['stubs']
-del stubs['ro/salon/agenda/test/NativeUpdateNetworkTest.java']
+del stubs['ro/caiuspoputa/agendasalon/NativeUpdateNetworkTest.java']
 stubs['android/net/Uri.java'] = '''package android.net;public class Uri {
 private final String raw;private Uri(String raw){this.raw=raw;}
 public static Uri parse(String raw){return new Uri(raw);}@Override public String toString(){return raw;}}
 '''
 bridge_methods = '\n'.join(method(name, 8) for name in ('appUpdateInfo', 'checkAppUpdate', 'appUpdateResult', 'installAppUpdate'))
-stubs['ro/salon/agenda/test/NativeUpdateBridgeTest.java'] = '''package ro.salon.agenda.test;
+stubs['ro/caiuspoputa/agendasalon/NativeUpdateBridgeTest.java'] = '''package ro.caiuspoputa.agendasalon;
 import android.net.Uri;import java.util.*;import java.util.concurrent.*;import java.net.*;import java.io.*;import org.json.JSONObject;
 @interface JavascriptInterface {}
 public final class NativeUpdateBridgeTest {
@@ -88,4 +88,4 @@ with tempfile.TemporaryDirectory(prefix='salon-native-update-bridge-') as direct
     classes = root / 'classes'
     sources = [str(p) for p in root.rglob('*.java')] + [str(source / name) for name in ('AppUpdater.java', 'UpdatePolicy.java', 'UpdateResultMailbox.java')]
     subprocess.run([str(java / 'javac.exe'), '-encoding', 'UTF-8', '-cp', str(json_classes), '-d', str(classes), *sources], check=True, timeout=30)
-    subprocess.run([str(java / 'java.exe'), '-cp', str(classes) + ';' + str(json_classes), 'ro.salon.agenda.test.NativeUpdateBridgeTest'], check=True, timeout=10)
+    subprocess.run([str(java / 'java.exe'), '-cp', str(classes) + ';' + str(json_classes), 'ro.caiuspoputa.agendasalon.NativeUpdateBridgeTest'], check=True, timeout=10)

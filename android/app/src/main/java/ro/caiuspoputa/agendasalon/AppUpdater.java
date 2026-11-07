@@ -1,4 +1,4 @@
-package ro.salon.agenda.test;
+package ro.caiuspoputa.agendasalon;
 
 import android.app.Activity;
 import android.content.ClipData;

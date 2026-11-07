@@ -1,4 +1,4 @@
-package ro.salon.agenda.test;
+package ro.caiuspoputa.agendasalon;
 
 import java.net.URI;
 import java.net.URL;
@@ -6,7 +6,7 @@ import java.net.URL;
 /** No Android dependency: rules shared by metadata parsing, network and native tests. */
 final class UpdatePolicy {
     static final String REPOSITORY = "https://github.com/caiuspoputa-debug/agenda-salon";
-    static final String METADATA_URL = "https://caiuspoputa-debug.github.io/agenda-salon/update.json";
+    static final String METADATA_URL = "https://caiuspoputa-debug.github.io/agenda-salon/update-personal.json";
     static final long MAX_APK_BYTES = 100L * 1024 * 1024;
     static final int MAX_METADATA_BYTES = 32 * 1024;
 

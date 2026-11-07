@@ -1,29 +1,34 @@
-# Agenda Salon pentru Android
+# Agenda Salon CP 1.1.0
 
-Versiunea curentă este **1.0.22**. Aplicație pentru telefon și tabletă, cu agendă locală, clienți, servicii, istoric, rapoarte și sincronizare opțională prin Atelier Sync din Home Assistant. Salon este disponibil doar pentru Android.
+Caius Poputa — Dezvoltator independent · © 2026.
 
-## Instalare și activare
+Identificator Android: ro.caiuspoputa.agendasalon. Nume în lista aplicațiilor: Agenda Salon CP.
+Se instalează separat de ediția ro.salon.agenda.test.
 
-Descarcă aplicația din [ultima versiune](https://github.com/caiuspoputa-debug/agenda-salon/releases/latest). Instalează peste aplicația existentă, fără dezinstalare sau ștergerea datelor. Sunt păstrate pachetul Android și certificatul original.
+## Transfer cu import manual
 
-La prima deschidere după trecerea la versiunea cu activare, fiecare instalare cere PIN-ul administratorului și conexiune la internet. Activarea se păstrează la update și este verificată offline. PIN-ul nu este inclus în APK, surse, backupuri sau sincronizarea HA. Receiptul este semnat și criptat separat în Android Keystore. Nu este necesar un cont Google pentru activare.
+1. Verifică sincronizarea și salvează un export JSON din aplicația existentă și un backup Atelier Sync în HA.
+2. Instalează CP pe telefon, activează instalarea online și alege rolul secundar.
+3. Păstrează sincronizarea HA oprită și importă manual fișierul JSON din Setări → Date și backup.
+4. Verifică programările, istoricul, prețurile, clienții, serviciile, cheltuielile, setările și logo-ul, inclusiv după redeschidere offline.
+5. Repetă pe tabletă cu rolul principal. Compară agenda importată cu cea din HA înainte de asociere.
 
-Programările, clienții, istoricul corecțiilor, serviciile, setările și asocierea HA rămân păstrate. Exportă periodic un backup din Setări. Dezinstalarea sau ștergerea datelor elimină stocarea locală și activarea.
+Prima asociere la un HA deja inițializat propune **Preia agenda HA**. Confirmarea înlocuiește agenda locală cu cea a serverului și salvează o copie locală a datelor anterioare asocierii. Verifică diferențele înainte să confirmi. Activarea și conexiunea HA se configurează separat pe fiecare instalare.
 
-## Logo
+- [Ghid de instalare și transfer](https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.0/Agenda-Salon-Instalare.pdf)
+- [Ghid de utilizare](https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.0/Agenda-Salon-Utilizare.pdf)
+- [Atelier Sync pentru Home Assistant](https://github.com/caiuspoputa-debug/atelier-sync-ha)
 
-Instalările noi pornesc cu locul logo gol. Actualizarea păstrează logo-urile personalizate și valorile `null` explicite. Logo-ul implicit vechi, atunci când câmpul lipsea, este salvat prin fluxul normal de modificare a agendei. Logo-ul se poate încărca și schimba din Setări și se sincronizează prin Atelier Sync0.4.0 sau mai nou.
+## Semnare și actualizări
 
-## Actualizări și backup
+Certificatul public este în certificates/Caius-Poputa.cer. Amprenta SHA-256 este 95c79cbc9e68e31611c477f8cc27050a682b4ee616a5c25d6cbc40005f1d2bf6.
 
-Verificarea automată se face discret la prima deschidere/revenire din zi. **Setări → Actualizări aplicație → Verifică acum** afișează rezultatul manual. Descărcarea începe doar după alegerea utilizatorului; fișierul este verificat ca dimensiune, SHA256, pachet, versiune și certificat. Android cere confirmarea instalării.
+Cheia privată este păstrată local. Pentru compilare, scriptul android/build.ps1 primește calea și parola din SALON_KEYSTORE_PATH și SALON_KEYSTORE_PASSWORD. Aliasul certificatului existent este geometrie-roti.
 
-Metadate: [update.json](https://caiuspoputa-debug.github.io/agenda-salon/update.json). Rămâne disponibilă și [adresa pentru versiunile anterioare](https://github.com/caiuspoputa-debug/agenda-salon/releases/latest/download/update.json).
+CP verifică actualizările la https://caiuspoputa-debug.github.io/agenda-salon/update-personal.json. Versiunea veche verifică update.json. Fiecare instalator verifică identificatorul și certificatul APK-ului înainte de instalare.
 
-Serviciul HA este separat: [Atelier Sync](https://github.com/caiuspoputa-debug/atelier-sync-ha). Activarea nu înlocuiește sincronizarea HA și nu trimite datele salonului către serviciul de activare.
+Serviciul de activare existent păstrează identificatorii săi de protocol. Aceștia identifică serviciul Salon, independent de numele pachetului Android. Fiecare instalare CP primește propriul identificator aleatoriu și propria dovadă de activare semnată. PIN-ul se comunică separat.
 
-## Surse și distribuție
+## Verificări
 
-Acest depozit conține numai sursa protejată curentă și distribuția Android curentă. Sursele Android sunt în `android/`. Cheia privată de semnare și secretele serviciului nu sunt incluse. `android/build.ps1` cere cheia originală și parola ei prin mediul local.
-
-Istoricul distribuțiilor vechi este păstrat într-o arhivă privată. Copiile deja descărcate sau distribuite în afara GitHub nu pot fi retrase prin schimbarea acestui depozit.
+407 teste ale regulilor aplicației, 345 verificări ale activării native și 84 verificări ale politicii actualizatorului au trecut. Transferul a fost verificat prin interfața aplicației, cu import JSON în mod local și asociere ulterioară la un Store Atelier Sync real, folosind exclusiv date sintetice. Semnătura APK-ului este validă. Verificarea pe dispozitivele utilizatorului urmează pașii din ghid.
