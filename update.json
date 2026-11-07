@@ -1,9 +1,0 @@
-{
-  "versionCode": 34,
-  "versionName": "1.0.23",
-  "minSdk": 26,
-  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.0.23/Agenda-Salon-1.0.23.apk",
-  "sha256": "9befd425b66b2dc2bdcb741e71c6a3b441c88e3a6933de3c50d73b9c49a46b88",
-  "size": 1394132,
-  "notes": "Setări → Ghiduri și instrucțiuni: acces la cele două PDF-uri oficiale. Setări → Despre aplicație: Caius Poputa, dezvoltator independent, © 2026. Instalează peste versiunea existentă pentru a păstra datele și activarea."
-}

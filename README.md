@@ -25,7 +25,7 @@ Certificatul public este în certificates/Caius-Poputa.cer. Amprenta SHA-256 est
 
 Cheia privată este păstrată local. Pentru compilare, scriptul android/build.ps1 primește calea și parola din SALON_KEYSTORE_PATH și SALON_KEYSTORE_PASSWORD. Aliasul certificatului existent este geometrie-roti.
 
-CP verifică actualizările la https://caiuspoputa-debug.github.io/agenda-salon/update-personal.json. Versiunea veche verifică update.json. Fiecare instalator verifică identificatorul și certificatul APK-ului înainte de instalare.
+CP verifică actualizările la https://caiuspoputa-debug.github.io/agenda-salon/update-personal.json. Descărcările și canalul update.json ale ediției vechi au fost retrase. Versiunile vechi sunt păstrate în arhiva privată. Trecerea de la ediția veche se face prin instalarea separată a CP și transferul descris mai sus. Fiecare instalator verifică identificatorul și certificatul APK-ului înainte de instalare.
 
 Serviciul de activare existent păstrează identificatorii săi de protocol. Aceștia identifică serviciul Salon, independent de numele pachetului Android. Fiecare instalare CP primește propriul identificator aleatoriu și propria dovadă de activare semnată. PIN-ul se comunică separat.
 
