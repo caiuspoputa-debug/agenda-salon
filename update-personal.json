@@ -1,9 +1,9 @@
 {
-  "versionCode": 35,
-  "versionName": "1.1.0",
+  "versionCode": 36,
+  "versionName": "1.1.1",
   "minSdk": 26,
-  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.0/Agenda-Salon-1.1.0.apk",
-  "sha256": "6f7a012ebaa1ca4fdd8b67722ab48436224d643d6d4fb33fbaca6e0d2e07eb81",
+  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.1/Agenda-Salon-1.1.1.apk",
+  "sha256": "82feae8f7bc9cbf4992b120e597eb411f30712ab8e29c0f6386aef39f050035c",
   "size": 1394132,
-  "notes": "Agenda Salon CP cu identitatea ro.caiuspoputa.agendasalon și certificat Caius Poputa. Instalare separată, activare online per instalare și import manual JSON cu sincronizarea HA oprită. Urmează ghidul înainte de conectarea la HA."
+  "notes": "Numele afișat pe Android devine Agenda Salon. Actualizare peste Agenda Salon CP 1.1.0, cu păstrarea datelor, activării și conexiunii HA."
 }
