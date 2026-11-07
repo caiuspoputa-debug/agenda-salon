@@ -1,5 +1,5 @@
 param(
-    [string]$OutputApk = "../../outputs/Agenda-Salon.apk",
+    [string]$OutputApk = "../../outputs/Agenda-Salon-Caius-Poputa-1.1.0/Agenda-Salon-1.1.0.apk",
     [string]$AndroidSdk = "$env:USERPROFILE/AppData/Local/Android/Sdk",
     [string]$JavaHome = "C:/Program Files/Android/Android Studio/jbr"
 )
@@ -55,7 +55,7 @@ Invoke-Checked $Jar @($JarTempArgument, "--update", "--file", (Join-Path $BuildP
 Invoke-Checked (Join-Path $ToolPath "zipalign.exe") @("-f", "-p", "4", (Join-Path $BuildPath "unsigned.apk"), (Join-Path $BuildPath "aligned.apk"))
 
 if (!(Test-Path -LiteralPath $KeystorePath)) { throw 'The original signing keystore must exist' }
-Invoke-Checked $Java @($JavaTempArgument, "-cp", (Join-Path $ToolPath "lib/apksigner.jar"), "com.android.apksigner.ApkSignerTool", "sign", "--ks", $KeystorePath, "--ks-key-alias", "salon-test", "--ks-pass", "env:SALON_KEYSTORE_PASSWORD", "--key-pass", "env:SALON_KEYSTORE_PASSWORD", "--out", $OutputPath, (Join-Path $BuildPath "aligned.apk"))
+Invoke-Checked $Java @($JavaTempArgument, "-cp", (Join-Path $ToolPath "lib/apksigner.jar"), "com.android.apksigner.ApkSignerTool", "sign", "--v4-signing-enabled", "false", "--ks", $KeystorePath, "--ks-key-alias", "geometrie-roti", "--ks-pass", "env:SALON_KEYSTORE_PASSWORD", "--key-pass", "env:SALON_KEYSTORE_PASSWORD", "--out", $OutputPath, (Join-Path $BuildPath "aligned.apk"))
 Invoke-Checked $Java @($JavaTempArgument, "-cp", (Join-Path $ToolPath "lib/apksigner.jar"), "com.android.apksigner.ApkSignerTool", "verify", "--verbose", $OutputPath)
 Invoke-Checked (Join-Path $ToolPath "zipalign.exe") @("-c", "-p", "4", $OutputPath)
 Invoke-Checked (Join-Path $ToolPath "aapt.exe") @("dump", "badging", $OutputPath)

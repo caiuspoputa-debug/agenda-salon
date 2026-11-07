@@ -13,7 +13,7 @@ import tempfile
 
 sys.stdout.reconfigure(encoding='utf-8')
 base = Path(__file__).resolve().parents[1]
-source = base / 'app/src/main/java/ro/salon/agenda/test'
+source = base / 'app/src/main/java/ro/caiuspoputa/agendasalon'
 java = Path('C:/Program Files/Android/Android Studio/jbr/bin')
 from native_update_test_support import json_runtime
 json_classes = json_runtime(base)
@@ -27,8 +27,8 @@ callback = re.search(r'    private void deliverAppUpdateResult\([^\n]+\) \{\n.*?
 namespace = {'callback': callback}
 exec(compile(ast.Module(body=[assignment], type_ignores=[]), str(fixture_file), 'exec'), namespace)
 stubs = namespace['stubs']
-del stubs['ro/salon/agenda/test/NativeUpdateNetworkTest.java']
-stubs['ro/salon/agenda/test/NativeUpdateWatchdogTest.java'] = r'''package ro.salon.agenda.test;
+del stubs['ro/caiuspoputa/agendasalon/NativeUpdateNetworkTest.java']
+stubs['ro/caiuspoputa/agendasalon/NativeUpdateWatchdogTest.java'] = r'''package ro.caiuspoputa.agendasalon;
 import java.io.*;import java.net.*;import java.nio.charset.StandardCharsets;import java.util.*;import java.util.concurrent.*;import java.lang.reflect.*;import org.json.JSONObject;
 public final class NativeUpdateWatchdogTest {
 static int checks;static volatile Fake next;static final List<Fake> opened=Collections.synchronizedList(new ArrayList<>());
@@ -124,4 +124,4 @@ with tempfile.TemporaryDirectory(prefix='salon-native-update-watchdog-') as dire
     classes = root / 'classes'
     sources = [str(p) for p in root.rglob('*.java')] + [str(source / name) for name in ('AppUpdater.java', 'UpdatePolicy.java', 'UpdateResultMailbox.java')]
     subprocess.run([str(java / 'javac.exe'), '-encoding', 'UTF-8', '-cp', str(json_classes), '-d', str(classes), *sources], check=True, timeout=30)
-    subprocess.run([str(java / 'java.exe'), '-cp', str(classes) + ';' + str(json_classes), 'ro.salon.agenda.test.NativeUpdateWatchdogTest'], check=True, timeout=35)
+    subprocess.run([str(java / 'java.exe'), '-cp', str(classes) + ';' + str(json_classes), 'ro.caiuspoputa.agendasalon.NativeUpdateWatchdogTest'], check=True, timeout=35)

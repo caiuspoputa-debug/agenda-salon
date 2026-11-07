@@ -1,4 +1,4 @@
-package ro.salon.agenda.test;
+package ro.caiuspoputa.agendasalon;
 
 /** Run with javac/java, without an Android device or network access. */
 public final class NativeUpdatePolicyTest {
@@ -13,7 +13,7 @@ public final class NativeUpdatePolicyTest {
         String apk = UpdatePolicy.REPOSITORY + "/releases/download/v1.0.16/Agenda-Salon-1.0.16.apk";
         allowed(() -> UpdatePolicy.apkUrl(apk, "1.0.16"));
         allowed(() -> UpdatePolicy.networkUrl(UpdatePolicy.METADATA_URL));
-        if (!"https://caiuspoputa-debug.github.io/agenda-salon/update.json".equals(UpdatePolicy.METADATA_URL))
+        if (!"https://caiuspoputa-debug.github.io/agenda-salon/update-personal.json".equals(UpdatePolicy.METADATA_URL))
             throw new AssertionError("Metadata must use the exact Salon Pages URL");
         checks++;
         allowed(() -> UpdatePolicy.networkUrl("https://release-assets.githubusercontent.com/github-production-release-asset/123/a?sp=r&sig=x"));
@@ -66,7 +66,7 @@ public final class NativeUpdatePolicyTest {
         rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, -1, 1001));
         rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 999));
         for (String invalid : new String[]{handoff.replace("https:", "http:"), handoff.replace("agenda-salon", "other"),
-                handoff + "?redirect=https://example.com", handoff + "#fragment", "content://ro.salon.agenda.test.updates/apk/x.apk",
+                handoff + "?redirect=https://example.com", handoff + "#fragment", "content://ro.caiuspoputa.agendasalon.updates/apk/x.apk",
                 "file:///sdcard/Download/update.apk", "intent://github.com/#Intent;end", handoff.replace("1.0.19.apk", "1.0.18.apk")})
             rejected(() -> UpdatePolicy.installUrl(invalid, "1.0.19", 30, 29, 1000, 1001));
         allowed(() -> UpdatePolicy.verifyIntegrity(1024, 1024, digest, digest.toLowerCase(java.util.Locale.ROOT)));

@@ -1,4 +1,4 @@
-package ro.salon.agenda.test;
+package ro.caiuspoputa.agendasalon;
 
 import android.content.Context;
 import android.util.Base64;

@@ -1,4 +1,4 @@
-package ro.salon.agenda.test;
+package ro.caiuspoputa.agendasalon;
 
 import org.json.JSONObject;
 import java.util.LinkedHashMap;

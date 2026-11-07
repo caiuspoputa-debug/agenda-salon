@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 
 BASE = Path(__file__).resolve().parents[1]
-SOURCE = BASE / 'app/src/main/java/ro/salon/agenda/test'
+SOURCE = BASE / 'app/src/main/java/ro/caiuspoputa/agendasalon'
 JAVA = Path('C:/Program Files/Android/Android Studio/jbr/bin')
 from native_update_test_support import json_runtime
 JSON_CLASSES = json_runtime(BASE)
@@ -58,7 +58,7 @@ public String getString(String key,String fallback){return values.getOrDefault(k
 public final class Editor {boolean erase;final Map<String,String> updates=new HashMap<>();public Editor putString(String k,String v){updates.put(k,v);return this;}public Editor clear(){erase=true;return this;}public boolean commit(){commits++;if(failCommit)return false;if(erase)values.clear();values.putAll(updates);return true;}}}
 ''',
 'android/content/Context.java': '''package android.content;import java.util.*;public class Context {
-public static final int MODE_PRIVATE=0;public final Map<String,SharedPreferences> buckets;public String packageName="ro.salon.agenda.test";
+public static final int MODE_PRIVATE=0;public final Map<String,SharedPreferences> buckets;public String packageName="ro.caiuspoputa.agendasalon";
 public Context(){buckets=new HashMap<>();}public Context(Context old){buckets=old.buckets;packageName=old.packageName;}
 public Context getApplicationContext(){return this;}public String getPackageName(){return packageName;}
 public SharedPreferences getSharedPreferences(String name,int mode){if(mode!=0)throw new AssertionError("non-private preferences");return buckets.computeIfAbsent(name,x->new SharedPreferences());}}
@@ -94,7 +94,7 @@ agendaOpens++;}
 }
 '''
 
-test_source = r'''package ro.salon.agenda.test;
+test_source = r'''package ro.caiuspoputa.agendasalon;
 import android.content.*;import android.os.Bundle;import android.security.keystore.KeyGenParameterSpec;
 import org.json.JSONObject;import java.util.*;import java.io.*;import java.net.*;import java.security.*;import java.security.cert.Certificate;import java.security.spec.*;import javax.crypto.*;import javax.net.ssl.*;
 public final class ActivationTests {
@@ -195,7 +195,7 @@ with tempfile.TemporaryDirectory(prefix='salon-native-activation-') as directory
         path = root / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding='utf8')
-    package = root / 'ro/salon/agenda/test'
+    package = root / 'ro/caiuspoputa/agendasalon'
     package.mkdir(parents=True)
     public_match = re.search(r'(?<=static final String PUBLIC_SPKI = )"[^"]+"', store_source)
     assert public_match
@@ -207,4 +207,4 @@ with tempfile.TemporaryDirectory(prefix='salon-native-activation-') as directory
     subprocess.run([str(JAVA / 'javac.exe'), '-encoding', 'UTF-8', '-cp', str(JSON_CLASSES), '-d', str(classes),
                     *map(str, root.rglob('*.java'))], check=True, timeout=40)
     subprocess.run([str(JAVA / 'java.exe'), '-Xmx96m', '-cp', str(classes) + ';' + str(JSON_CLASSES),
-                    'ro.salon.agenda.test.ActivationTests'], check=True, timeout=30)
+                    'ro.caiuspoputa.agendasalon.ActivationTests'], check=True, timeout=30)
