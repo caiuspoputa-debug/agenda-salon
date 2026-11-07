@@ -1,5 +1,5 @@
 param(
-    [string]$OutputApk = "../../outputs/Agenda-Salon-Caius-Poputa-1.1.0/Agenda-Salon-1.1.0.apk",
+    [string]$OutputApk = "../../outputs/Agenda-Salon-1.1.1/Agenda-Salon-1.1.1.apk",
     [string]$AndroidSdk = "$env:USERPROFILE/AppData/Local/Android/Sdk",
     [string]$JavaHome = "C:/Program Files/Android/Android Studio/jbr"
 )

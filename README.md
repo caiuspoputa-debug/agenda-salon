@@ -1,11 +1,15 @@
-# Agenda Salon CP 1.1.0
+# Agenda Salon 1.1.1
 
 Caius Poputa — Dezvoltator independent · © 2026.
 
-Identificator Android: ro.caiuspoputa.agendasalon. Nume în lista aplicațiilor: Agenda Salon CP.
+Identificator Android: ro.caiuspoputa.agendasalon. Nume în lista aplicațiilor: Agenda Salon.
 Se instalează separat de ediția ro.salon.agenda.test.
 
-## Transfer cu import manual
+## Actualizare de la 1.1.0
+
+În Agenda Salon CP deschide Setări → Actualizări aplicație → Verifică acum și confirmă actualizarea. Programările, setările, activarea și conexiunea HA se păstrează. Numele afișat pe Android devine Agenda Salon.
+
+## Transfer cu import manual din ediția veche 1.0.23 sau anterioară
 
 1. Verifică sincronizarea și salvează un export JSON din aplicația existentă și un backup Atelier Sync în HA.
 2. Instalează CP pe telefon, activează instalarea online și alege rolul secundar.
@@ -15,8 +19,8 @@ Se instalează separat de ediția ro.salon.agenda.test.
 
 Prima asociere la un HA deja inițializat propune **Preia agenda HA**. Confirmarea înlocuiește agenda locală cu cea a serverului și salvează o copie locală a datelor anterioare asocierii. Verifică diferențele înainte să confirmi. Activarea și conexiunea HA se configurează separat pe fiecare instalare.
 
-- [Ghid de instalare și transfer](https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.0/Agenda-Salon-Instalare.pdf)
-- [Ghid de utilizare](https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.0/Agenda-Salon-Utilizare.pdf)
+- [Ghid de instalare și transfer](https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.1/Agenda-Salon-Instalare.pdf)
+- [Ghid de utilizare](https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.1/Agenda-Salon-Utilizare.pdf)
 - [Atelier Sync pentru Home Assistant](https://github.com/caiuspoputa-debug/atelier-sync-ha)
 
 ## Semnare și actualizări

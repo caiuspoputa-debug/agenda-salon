@@ -144,8 +144,8 @@ public final class MainActivity extends Activity {
                 Uri uri = request.getUrl();
                 if (isHome(uri)) return false;
                 if (request.isForMainFrame() && request.hasGesture()
-                        && ("https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.0/Agenda-Salon-Instalare.pdf".equals(uri.toString())
-                        || "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.0/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
+                        && ("https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.1/Agenda-Salon-Instalare.pdf".equals(uri.toString())
+                        || "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.1/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, uri));
                     } catch (ActivityNotFoundException e) {

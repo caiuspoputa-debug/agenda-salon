@@ -21,7 +21,7 @@
   const win=options.window||global,doc=options.document||win.document,bridge=options.Android||win.Android,clock=options.now||Date.now,later=options.setTimeout||win.setTimeout.bind(win),cancel=options.clearTimeout||win.clearTimeout.bind(win);
   let storage;try{storage=options.storage||win.localStorage;}catch(_){}
   let stored;try{stored=storage?.getItem(PREF_KEY);}catch(_){}
-  let prefs=preferences(stored),info={versionCode:35,versionName:'1.1.0'},state={status:'idle',message:''},available=null,pending=null,serial=0,timer=null,poll=null,resultPoll=null,prompt=null,promptWanted=false,promptExplicit=false,returnToCheck=false,retryAt=0,started=false,automaticReady=false,destroyed=false,eligibleDay=localDay(clock()),priorFocus=null,priorOverflow='',priorInert=false,priorAria=null,resultNotice=null;const observers=[];
+  let prefs=preferences(stored),info={versionCode:36,versionName:'1.1.1'},state={status:'idle',message:''},available=null,pending=null,serial=0,timer=null,poll=null,resultPoll=null,prompt=null,promptWanted=false,promptExplicit=false,returnToCheck=false,retryAt=0,started=false,automaticReady=false,destroyed=false,eligibleDay=localDay(clock()),priorFocus=null,priorOverflow='',priorInert=false,priorAria=null,resultNotice=null;const observers=[];
   const supported=!!bridge&&typeof bridge.checkAppUpdate==='function'&&typeof bridge.installAppUpdate==='function';
   try{const value=JSON.parse(bridge?.appUpdateInfo?.()||'null');if(value&&Number.isSafeInteger(value.versionCode)&&typeof value.versionName==='string'&&/^\d+\.\d+\.\d+$/.test(value.versionName)&&value.versionName.length<=40)info=value;}catch(_){}
   function savePreferences(){try{storage?.setItem(PREF_KEY,JSON.stringify(prefs));}catch(_){} }
