@@ -143,6 +143,16 @@ public final class MainActivity extends Activity {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 if (isHome(uri)) return false;
+                if (request.isForMainFrame() && request.hasGesture()
+                        && ("https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.0.22/Agenda-Salon-Instalare.pdf".equals(uri.toString())
+                        || "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.0.22/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                    } catch (ActivityNotFoundException e) {
+                        Toast.makeText(MainActivity.this, "Nu există un browser disponibil.", Toast.LENGTH_SHORT).show();
+                    }
+                    return true;
+                }
                 if ("tel".equals(uri.getScheme())) dialNumber(uri.getSchemeSpecificPart());
                 return true;
             }

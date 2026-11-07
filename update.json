@@ -1,9 +1,9 @@
 {
-  "versionCode": 33,
-  "versionName": "1.0.22",
+  "versionCode": 34,
+  "versionName": "1.0.23",
   "minSdk": 26,
-  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.0.22/Agenda-Salon-1.0.22.apk",
-  "sha256": "59dab4e831b635bf8267ae99b075a150efb22815937864199dabae4368acf33e",
-  "size": 1394134,
-  "notes": "Activare o singură dată pe instalare, păstrată la update și verificată offline. Prima activare necesită internet și PIN-ul administratorului. Agenda, istoricul, setările, sincronizarea HA și backupurile rămân păstrate. Instalările noi au locul logo gol; logo-urile existente sunt păstrate prin migrarea normală. Instalează peste versiunea existentă, fără dezinstalare."
+  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.0.23/Agenda-Salon-1.0.23.apk",
+  "sha256": "9befd425b66b2dc2bdcb741e71c6a3b441c88e3a6933de3c50d73b9c49a46b88",
+  "size": 1394132,
+  "notes": "Setări → Ghiduri și instrucțiuni: acces la cele două PDF-uri oficiale. Setări → Despre aplicație: Caius Poputa, dezvoltator independent, © 2026. Instalează peste versiunea existentă pentru a păstra datele și activarea."
 }
