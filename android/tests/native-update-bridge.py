@@ -38,7 +38,7 @@ stubs['android/net/Uri.java'] = '''package android.net;public class Uri {
 private final String raw;private final java.net.URI value;private Uri(String raw){this.raw=raw;this.value=java.net.URI.create(raw);}
 public static Uri parse(String raw){return new Uri(raw);}public String getScheme(){return value.getScheme();}public String getHost(){return value.getHost();}public String getUserInfo(){return value.getUserInfo();}public int getPort(){return value.getPort();}public String getPath(){return value.getPath();}public String getQuery(){return value.getQuery();}public String getFragment(){return value.getFragment();}@Override public String toString(){return raw;}}
 '''
-bridge_methods = '\n'.join(method(name, 8) for name in ('appUpdateInfo', 'checkAppUpdate', 'appUpdateResult', 'installAppUpdate'))
+bridge_methods = '\n'.join(method(name, 8) for name in ('appUpdateInfo', 'checkAppUpdate', 'appUpdateResult', 'openAppUpdate'))
 stubs['ro/caiuspoputa/agendasalon/NativeUpdateBridgeTest.java'] = '''package ro.caiuspoputa.agendasalon;
 import android.net.Uri;import java.util.*;import java.util.concurrent.*;import java.net.*;import java.io.*;import org.json.JSONObject;
 @interface JavascriptInterface {}
@@ -65,7 +65,7 @@ public static void main(String[] args)throws Exception {
   for(String url:new String[]{"file:///android_asset/index.html","https://appassets.androidplatform.net/assets/index.html?x=1","https://appassets.androidplatform.net/assets/index.html#x","file://remote/android_asset/index.html","file:///android_asset/other.html","file:///sdcard/index.html","https://example.com/index.html","https://caiuspoputa-debug.github.io/agenda-salon/index.html","about:blank",""}){
    check(!Probe.isHome(Uri.parse(url)),"only exact packaged HTTPS home is trusted: "+url);
    probe.url=url;String id="denied-"+checks;bridge.checkAppUpdate(id);JSONObject rejected=envelope(probe,id);check("terminal".equals(rejected.getString("stage")),"guard rejection terminal");check("error".equals(rejected.getJSONObject("result").getString("status")),"guard rejection retained instead of silent timeout");
-   id="install-denied-"+checks;bridge.installAppUpdate(id);check("error".equals(envelope(probe,id).getJSONObject("result").getString("status")),"installation also requires exact trusted page");
+   id="install-denied-"+checks;bridge.openAppUpdate(id);check("error".equals(envelope(probe,id).getJSONObject("result").getString("status")),"installation also requires exact trusted page");
   }
   probe.url="https://appassets.androidplatform.net/assets/index.html";probe.dropUi=true;bridge.checkAppUpdate("queued-no-ui");int before=probe.webViewReads;
   check("queued".equals(envelope(probe,"queued-no-ui").getString("stage")),"queue evidence visible before UI scheduling");

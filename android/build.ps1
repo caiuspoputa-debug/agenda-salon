@@ -1,5 +1,5 @@
 param(
-    [string]$OutputApk = "../../../outputs/Agenda-Salon-1.1.2/Agenda-Salon-1.1.2.apk",
+    [string]$OutputApk = "../../../outputs/Agenda-Salon-1.1.3/Agenda-Salon-1.1.3.apk",
     [string]$AndroidSdk = "$env:USERPROFILE/AppData/Local/Android/Sdk",
     [string]$JavaHome = "C:/Program Files/Android/Android Studio/jbr"
 )
@@ -26,6 +26,6 @@ if ($LASTEXITCODE -ne 0 -or !($Verification -match '^Signer #1 certificate SHA-2
 & (Join-Path $AndroidSdk 'build-tools/36.1.0/zipalign.exe') -c -p 4 $OutputPath
 if ($LASTEXITCODE -ne 0) { throw 'APK alignment failed.' }
 $Badging = & (Join-Path $AndroidSdk 'build-tools/36.1.0/aapt2.exe') dump badging $OutputPath
-if ($LASTEXITCODE -ne 0 -or !($Badging -match "^package: name='ro.caiuspoputa.agendasalon' versionCode='37' versionName='1.1.2'") -or !($Badging -match "^application-label:'Agenda Salon'$")) { throw 'Wrong APK identity.' }
+if ($LASTEXITCODE -ne 0 -or !($Badging -match "^package: name='ro.caiuspoputa.agendasalon' versionCode='38' versionName='1.1.3'") -or !($Badging -match "^application-label:'Agenda Salon'$")) { throw 'Wrong APK identity.' }
 Get-Item -LiteralPath $OutputPath | Select-Object FullName,Length
 Get-FileHash -LiteralPath $OutputPath -Algorithm SHA256

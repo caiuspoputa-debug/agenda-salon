@@ -16,8 +16,8 @@ public final class NativeUpdatePolicyTest {
         if (!"https://caiuspoputa-debug.github.io/agenda-salon/update-personal.json".equals(UpdatePolicy.METADATA_URL))
             throw new AssertionError("Metadata must use the exact Salon Pages URL");
         checks++;
-        allowed(() -> UpdatePolicy.networkUrl("https://release-assets.githubusercontent.com/github-production-release-asset/123/a?sp=r&sig=x"));
-        allowed(() -> UpdatePolicy.networkUrl("https://objects.githubusercontent.com/github-production-release-asset/123/a"));
+        rejected(() -> UpdatePolicy.networkUrl("https://release-assets.githubusercontent.com/github-production-release-asset/123/a?sp=r&sig=x"));
+        rejected(() -> UpdatePolicy.networkUrl("https://objects.githubusercontent.com/github-production-release-asset/123/a"));
         for (String url : new String[]{
                 "http://github.com/caiuspoputa-debug/agenda-salon/releases/latest/download/update.json",
                 "https://evil.example/a", "file:///android_asset/index.html", "https://github.com.evil.example/a",
@@ -55,30 +55,20 @@ public final class NativeUpdatePolicyTest {
         checks++;
         for (String invalid : new String[]{"", digest + "a", digest.substring(1), digest.substring(1) + "g"})
             rejected(() -> UpdatePolicy.digest(invalid));
-        // Integrated installation requires a successful recent check and a strictly newer release.
+        // Opening the browser requires a successful recent check and a strictly newer release.
         String handoff = UpdatePolicy.REPOSITORY + "/releases/download/v1.0.19/Agenda-Salon-1.0.19.apk";
-        allowed(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 1000));
-        allowed(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 1000 + 24L * 60 * 60 * 1000));
-        rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 1001 + 24L * 60 * 60 * 1000));
-        rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 29, 29, 1000, 1001));
-        rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 28, 29, 1000, 1001));
-        rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 0, 1000, 1001));
-        rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, -1, 1001));
-        rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 999));
+        allowed(() -> UpdatePolicy.browserUrl(handoff, "1.0.19", 30, 29, 1000, 1000));
+        allowed(() -> UpdatePolicy.browserUrl(handoff, "1.0.19", 30, 29, 1000, 1000 + 24L * 60 * 60 * 1000));
+        rejected(() -> UpdatePolicy.browserUrl(handoff, "1.0.19", 30, 29, 1000, 1001 + 24L * 60 * 60 * 1000));
+        rejected(() -> UpdatePolicy.browserUrl(handoff, "1.0.19", 29, 29, 1000, 1001));
+        rejected(() -> UpdatePolicy.browserUrl(handoff, "1.0.19", 28, 29, 1000, 1001));
+        rejected(() -> UpdatePolicy.browserUrl(handoff, "1.0.19", 30, 0, 1000, 1001));
+        rejected(() -> UpdatePolicy.browserUrl(handoff, "1.0.19", 30, 29, -1, 1001));
+        rejected(() -> UpdatePolicy.browserUrl(handoff, "1.0.19", 30, 29, 1000, 999));
         for (String invalid : new String[]{handoff.replace("https:", "http:"), handoff.replace("agenda-salon", "other"),
                 handoff + "?redirect=https://example.com", handoff + "#fragment", "content://ro.caiuspoputa.agendasalon.updates/apk/x.apk",
                 "file:///sdcard/Download/update.apk", "intent://github.com/#Intent;end", handoff.replace("1.0.19.apk", "1.0.18.apk")})
-            rejected(() -> UpdatePolicy.installUrl(invalid, "1.0.19", 30, 29, 1000, 1001));
-        allowed(() -> UpdatePolicy.verifyIntegrity(1024, 1024, digest, digest.toLowerCase(java.util.Locale.ROOT)));
-        allowed(() -> UpdatePolicy.verifyIntegrity(UpdatePolicy.MAX_APK_BYTES, UpdatePolicy.MAX_APK_BYTES, digest, digest));
-        rejected(() -> UpdatePolicy.verifyIntegrity(1024, 1023, digest, digest));
-        rejected(() -> UpdatePolicy.verifyIntegrity(1024, 1025, digest, digest));
-        rejected(() -> UpdatePolicy.verifyIntegrity(0, 0, digest, digest));
-        rejected(() -> UpdatePolicy.verifyIntegrity(-1, -1, digest, digest));
-        rejected(() -> UpdatePolicy.verifyIntegrity(UpdatePolicy.MAX_APK_BYTES + 1, UpdatePolicy.MAX_APK_BYTES + 1, digest, digest));
-        rejected(() -> UpdatePolicy.verifyIntegrity(1024, 1024, digest, digest.substring(1) + "b"));
-        rejected(() -> UpdatePolicy.verifyIntegrity(1024, 1024, "invalid", digest));
-        rejected(() -> UpdatePolicy.verifyIntegrity(1024, 1024, digest, null));
+            rejected(() -> UpdatePolicy.browserUrl(invalid, "1.0.19", 30, 29, 1000, 1001));
         System.out.println("Native update policy: " + checks + " checks passed.");
     }
 }

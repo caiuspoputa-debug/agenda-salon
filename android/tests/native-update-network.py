@@ -1,7 +1,7 @@
 """Production native updater -> official Android JSON -> actual callback JS.
 
 Android Activity/PackageManager are service adapters only. HTTPS metadata reads
-are real and read-only; install() is never called. No Android device is claimed.
+are real and read-only; openDownload() is never called. No Android device is claimed.
 Requires the official AOSP JSON audit classes prepared by the review agent.
 """
 from pathlib import Path
@@ -31,9 +31,9 @@ public android.content.pm.PackageManager getPackageManager(){return pm;}public S
 public void runOnUiThread(Runnable r){ui.execute(r);}public void startActivity(android.content.Intent i){throw new AssertionError("Installer must never be opened by a metadata check");}
 }''',
 'android/content/Intent.java': '''package android.content;public class Intent {
-public static final String ACTION_VIEW="VIEW";public static final int FLAG_GRANT_READ_URI_PERMISSION=1;
+public static final String ACTION_VIEW="VIEW",CATEGORY_BROWSABLE="BROWSABLE";public static final int FLAG_GRANT_READ_URI_PERMISSION=1;
 public Intent(String a){}public Intent(String a,android.net.Uri uri){}public Intent setDataAndType(android.net.Uri uri,String mime){return this;}
-public void setClipData(ClipData data){}public Intent addFlags(int flags){return this;}
+public Intent addCategory(String c){return this;}public void setClipData(ClipData data){}public Intent addFlags(int flags){return this;}
 }''',
 'android/content/ClipData.java': '''package android.content;public class ClipData {public static ClipData newRawUri(String name,android.net.Uri uri){return new ClipData();}}''',
 'android/content/pm/PackageManager.java': '''package android.content.pm;public class PackageManager {
@@ -100,7 +100,7 @@ with tempfile.TemporaryDirectory(prefix='salon-native-update-network-') as direc
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const fixture=JSON.parse(fs.readFileSync(0,'utf8'));const {create}=require(process.argv[1]);
 const win={navigator:{onLine:true},addEventListener(){},removeEventListener(){}};
-const bridge={appUpdateInfo:()=>JSON.stringify({versionCode:fixture.installedCode,versionName:'1.0.19'}),checkAppUpdate:id=>assert.equal(id,'app-update-0-1'),installAppUpdate:()=>{throw Error('No install during check');}};
+const bridge={appUpdateInfo:()=>JSON.stringify({versionCode:fixture.installedCode,versionName:'1.0.19'}),checkAppUpdate:id=>assert.equal(id,'app-update-0-1'),openAppUpdate:()=>{throw Error('No install during check');}};
 const manager=create({window:win,Android:bridge,now:()=>0,setTimeout:()=>1,clearTimeout:()=>{}});manager.start();manager.check();assert.equal(manager.getStatus().busy,true);
 vm.runInNewContext(fixture.script,{window:win});const status=manager.getStatus();assert.equal(status.busy,false);assert.equal(status.status,fixture.mode);manager.destroy();
 console.log(JSON.stringify({mode:fixture.mode,elapsedMs:fixture.elapsedMs,status:status.status,pendingCleared:!status.busy,message:status.message,version:status.available?.versionName}));

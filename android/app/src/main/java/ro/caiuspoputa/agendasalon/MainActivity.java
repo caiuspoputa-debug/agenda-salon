@@ -160,8 +160,8 @@ public final class MainActivity extends Activity {
                 if (request.isForMainFrame() && (isHome(uri)
                         || !originCaptured && !originComplete && isLegacyHome(uri))) return false;
                 if (request.isForMainFrame() && request.hasGesture()
-                        && ("https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.2/Agenda-Salon-Instalare.pdf".equals(uri.toString())
-                        || "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.2/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
+                        && ("https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.3/Agenda-Salon-Instalare.pdf".equals(uri.toString())
+                        || "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.3/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, uri));
                     } catch (ActivityNotFoundException e) {
@@ -399,7 +399,7 @@ public final class MainActivity extends Activity {
             return destroyed || updater == null ? "" : updater.resultFor(requestId);
         }
 
-        @JavascriptInterface public void installAppUpdate(String requestId) {
+        @JavascriptInterface public void openAppUpdate(String requestId) {
             final AppUpdater updater = appUpdater;
             if (destroyed || updater == null) return;
             updater.queueResult(requestId);
@@ -409,7 +409,7 @@ public final class MainActivity extends Activity {
                     updater.rejectResult(requestId, "Actualizarea Android nu poate porni din acest ecran. Redeschide aplicația.");
                     return;
                 }
-                updater.install(requestId);
+                updater.openDownload(requestId);
             });
         }
 

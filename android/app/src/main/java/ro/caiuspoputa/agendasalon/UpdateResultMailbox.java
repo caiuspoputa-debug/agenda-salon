@@ -29,7 +29,7 @@ final class UpdateResultMailbox {
     private void stage(String id, String stage) {
         if (closed || !validId(id)) return;
         Entry previous = entries.get(id);
-        if (previous != null && ("terminal".equals(previous.stage) || "progress".equals(previous.stage)
+        if (previous != null && ("terminal".equals(previous.stage)
                 || "started".equals(previous.stage) && "queued".equals(stage))) return;
         save(id, stage, null);
     }
@@ -39,14 +39,14 @@ final class UpdateResultMailbox {
         Entry previous = entries.get(id);
         if (previous != null && "terminal".equals(previous.stage)) return false;
         String status = result.optString("status", "");
-        if (!("downloading".equals(status) || "available".equals(status) || "current".equals(status)
-                || "error".equals(status) || "permission".equals(status) || "installer".equals(status))) return false;
+        if (!("available".equals(status) || "current".equals(status)
+                || "error".equals(status) || "browser".equals(status))) return false;
         String encoded = result.toString();
         if (encoded == null || encoded.length() > MAX_RESULT_CHARS) {
             encoded = "{\"status\":\"error\",\"message\":\"Răspunsul actualizării nu este valid. Reîncearcă.\"}";
             status = "error";
         }
-        save(id, "downloading".equals(status) ? "progress" : "terminal", encoded);
+        save(id, "terminal", encoded);
         return true;
     }
 
@@ -58,6 +58,11 @@ final class UpdateResultMailbox {
             String oldest = entries.keySet().iterator().next();
             entries.remove(oldest);
         }
+    }
+
+    synchronized boolean isTerminal(String id) {
+        Entry entry = entries.get(id);
+        return entry != null && "terminal".equals(entry.stage);
     }
 
     synchronized String read(String id) {

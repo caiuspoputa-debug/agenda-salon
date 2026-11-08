@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <application
         android:allowBackup="false"
         android:usesCleartextTraffic="true"
@@ -16,11 +15,6 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <meta-data android:name="ro.caiuspoputa.agendasalon.developer" android:value="Caius Poputa" />
-        <provider
-            android:name=".UpdateApkProvider"
-            android:authorities="ro.caiuspoputa.agendasalon.updates"
-            android:exported="false"
-            android:grantUriPermissions="true" />
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
