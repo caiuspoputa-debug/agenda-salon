@@ -1,9 +1,9 @@
 {
-  "versionCode": 36,
-  "versionName": "1.1.1",
+  "versionCode": 37,
+  "versionName": "1.1.2",
   "minSdk": 26,
-  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.1/Agenda-Salon-1.1.1.apk",
-  "sha256": "82feae8f7bc9cbf4992b120e597eb411f30712ab8e29c0f6386aef39f050035c",
-  "size": 1394132,
-  "notes": "Numele afișat pe Android devine Agenda Salon. Actualizare peste Agenda Salon CP 1.1.0, cu păstrarea datelor, activării și conexiunii HA."
+  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.2/Agenda-Salon-1.1.2.apk",
+  "sha256": "0a1ddcbfc71bb9b44f271c4b0cf8292d4377272aa919a4b2cc08aae053b66a49",
+  "size": 3010403,
+  "notes": "Încărcare locală HTTPS a interfeței, ca în Agenda Frizerie. Păstrează programările, istoricul, setările, activarea, conexiunea HA și modificările în așteptare. Actualizare peste 1.1.0/1.1.1, fără reinstalare sau import de backup."
 }
