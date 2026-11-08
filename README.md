@@ -5,6 +5,8 @@ Caius Poputa — Dezvoltator independent · © 2026.
 Identificator Android: ro.caiuspoputa.agendasalon. Nume în lista aplicațiilor: Agenda Salon.
 Actualizare peste edițiile 1.1.0, 1.1.1 și 1.1.2. Ediția veche ro.salon.agenda.test are un identificator diferit.
 
+**[Descarcă APK-ul 1.1.3 direct](https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.3/Agenda-Salon-1.1.3.apk)** — același fișier semnat, fără recompilare, SHA-256 `b5e60ea4ebddfc9bd1421391893c1d2219a1c5c979dfdb76537282f50debd600`. Linkurile GitHub Releases au returnat erori 502/503 și timeouturi; catalogul comun servește acum APK-ul și ghidurile prin GitHub Pages. Deschide APK-ul descărcat și confirmă actualizarea peste aplicația existentă, fără dezinstalare sau import de backup. Versiunile instalate acceptă numai ruta Releases pentru actualizare, deci această descărcare alternativă trebuie deschisă din catalog sau din linkul de mai sus.
+
 ## Actualizare de la 1.1.0 / 1.1.1 / 1.1.2
 
 În aplicația instalată deschide Setări → Actualizări aplicație → Verifică acum și confirmă actualizarea. Se păstrează identificatorul și certificatul Android, baza locală cu programări și istoric, clienții, serviciile, prețurile, cheltuielile, setările, logo-ul, activarea și conexiunea HA, inclusiv rolul dispozitivului și modificările în așteptare. Nu dezinstala aplicația, nu șterge datele și nu importa din nou backupul pentru această actualizare.
