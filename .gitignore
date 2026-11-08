@@ -7,3 +7,7 @@ __pycache__/
 *.apk
 *.tar.gz
 .env*
+
+.gradle/
+local.properties
+salon-native-test-runtime/

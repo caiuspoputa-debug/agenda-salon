@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -30,6 +31,7 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 import android.window.OnBackInvokedCallback;
+import androidx.webkit.WebViewAssetLoader;
 
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -66,7 +68,12 @@ public final class MainActivity extends Activity {
     private static final int MAX_DEVICE_BYTES = 96 * 1024 * 1024;
     private static final int MAX_REQUEST_BYTES = 30 * 1024 * 1024;
     private static final int MAX_RESPONSE_BYTES = 40 * 1024 * 1024;
-    private static final String HOME = "file:///android_asset/index.html";
+    private static final String ASSET_HOST = "appassets.androidplatform.net";
+    private static final String HOME = "https://appassets.androidplatform.net/assets/index.html";
+    private static final String LEGACY_HOME = "file:///android_asset/index.html";
+    private static final String ORIGIN_PREFS = "salon-webview-origin-v1";
+    private volatile boolean originCaptured, originComplete;
+    private volatile String capturedUpdatePreferences;
     private WebView webView;
     private SalonDatabase database;
     private AppUpdater appUpdater;
@@ -135,6 +142,14 @@ public final class MainActivity extends Activity {
                 return showLogoFileChooser(view, callback, parameters);
             }
         });
+        final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
+            .setDomain(ASSET_HOST).setHttpAllowed(false)
+            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this)).build();
+        SharedPreferences originPrefs = getSharedPreferences(ORIGIN_PREFS, Context.MODE_PRIVATE);
+        originCaptured = originPrefs.getBoolean("captured", false);
+        originComplete = originPrefs.getBoolean("complete", false);
+        capturedUpdatePreferences = originPrefs.getString("updatePreferences", null);
+        if (!originComplete) webView.addJavascriptInterface(new OriginPreferencesMigration(), "SalonOriginMigration");
         webView.setWebViewClient(new WebViewClient() {
             @Override public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 // A callback belongs to its original document, including same-URL reloads.
@@ -142,10 +157,11 @@ public final class MainActivity extends Activity {
             }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
-                if (isHome(uri)) return false;
+                if (request.isForMainFrame() && (isHome(uri)
+                        || !originCaptured && !originComplete && isLegacyHome(uri))) return false;
                 if (request.isForMainFrame() && request.hasGesture()
-                        && ("https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.1/Agenda-Salon-Instalare.pdf".equals(uri.toString())
-                        || "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.1/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
+                        && ("https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.2/Agenda-Salon-Instalare.pdf".equals(uri.toString())
+                        || "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.2/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, uri));
                     } catch (ActivityNotFoundException e) {
@@ -153,18 +169,24 @@ public final class MainActivity extends Activity {
                     }
                     return true;
                 }
-                if ("tel".equals(uri.getScheme())) dialNumber(uri.getSchemeSpecificPart());
+                if (request.isForMainFrame() && request.hasGesture() && "tel".equals(uri.getScheme()))
+                    dialNumber(uri.getSchemeSpecificPart());
                 return true;
             }
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
-                if ("file".equals(uri.getScheme()) && uri.getPath() != null
-                        && uri.getPath().startsWith("/android_asset/")) return null;
+                if (isAssetRequest(uri)) {
+                    WebResourceResponse local = assetLoader.shouldInterceptRequest(uri);
+                    if (local != null) return local;
+                }
+                // The old origin runs only boot.js, never the agenda or network code.
+                if (!originCaptured && !originComplete && uri != null
+                        && (isLegacyHome(uri) || "file:///android_asset/boot.js".equals(uri.toString()))) return null;
                 return new WebResourceResponse("text/plain", "UTF-8", 403, "Blocked",
                     java.util.Collections.emptyMap(), new ByteArrayInputStream(new byte[0]));
             }
         });
-        webView.loadUrl(HOME);
+        webView.loadUrl(originCaptured || originComplete ? HOME : LEGACY_HOME);
         if (Build.VERSION.SDK_INT >= 33) {
             backCallback = this::handleBack;
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(0, backCallback);
@@ -196,7 +218,71 @@ public final class MainActivity extends Activity {
     }
 
     private static boolean isHome(Uri uri) {
-        return uri != null && HOME.equals(uri.toString());
+        return secureAssetHost(uri) && "/assets/index.html".equals(uri.getPath())
+            && uri.getQuery() == null && uri.getFragment() == null;
+    }
+
+    private static boolean secureAssetHost(Uri uri) {
+        return uri != null && "https".equals(uri.getScheme()) && ASSET_HOST.equals(uri.getHost())
+            && uri.getUserInfo() == null && (uri.getPort() == -1 || uri.getPort() == 443);
+    }
+
+    private static boolean isAssetRequest(Uri uri) {
+        return secureAssetHost(uri) && uri.getPath() != null && uri.getPath().startsWith("/assets/")
+            && uri.getQuery() == null && uri.getFragment() == null;
+    }
+
+    private static boolean isLegacyHome(Uri uri) {
+        return uri != null && LEGACY_HOME.equals(uri.toString());
+    }
+
+    /** Two durable steps: capture old preferences, then acknowledge the new origin's write.
+     * Agenda, HA identity/outbox and activation remain in their existing native stores.
+     */
+    public final class OriginPreferencesMigration {
+        @JavascriptInterface public void captureUpdatePreferences(String raw) {
+            runOnUiThread(() -> {
+                if (destroyed || originCaptured || originComplete || webView == null
+                        || !isLegacyHome(Uri.parse(webView.getUrl() == null ? "" : webView.getUrl()))) return;
+                try {
+                    if (raw != null && raw.length() > 65536) throw new IOException("Preference too large");
+                    boolean saved = getSharedPreferences(ORIGIN_PREFS, Context.MODE_PRIVATE).edit()
+                        .putString("updatePreferences", raw).putBoolean("captured", true).commit();
+                    if (!saved) throw new IOException("Preference capture failed");
+                    capturedUpdatePreferences = raw;
+                    originCaptured = true;
+                    webView.loadUrl(HOME);
+                } catch (Exception failure) { originMigrationFailed(); }
+            });
+        }
+
+        /** Fixed updater preference only; no agenda/activation/HA access. */
+        @JavascriptInterface public String readCapturedPreferences() {
+            JSONObject result = new JSONObject();
+            try {
+                result.put("captured", originCaptured && !originComplete && !destroyed);
+                result.put("raw", capturedUpdatePreferences == null ? JSONObject.NULL : capturedUpdatePreferences);
+            } catch (Exception ignored) {}
+            return result.toString();
+        }
+
+        @JavascriptInterface public void finishUpdatePreferences() {
+            runOnUiThread(() -> {
+                if (destroyed || originComplete || !originCaptured || !trustedPage()) return;
+                try {
+                    if (!getSharedPreferences(ORIGIN_PREFS, Context.MODE_PRIVATE).edit()
+                            .putBoolean("complete", true).commit()) throw new IOException("Preference acknowledgement failed");
+                    originComplete = true;
+                    webView.removeJavascriptInterface("SalonOriginMigration");
+                    webView.evaluateJavascript("window.SalonOriginMigrationReady && window.SalonOriginMigrationReady();", null);
+                } catch (Exception failure) { originMigrationFailed(); }
+            });
+        }
+    }
+
+    private void originMigrationFailed() {
+        if (destroyed || webView == null) return;
+        webView.evaluateJavascript("window.SalonOriginMigrationFailed && window.SalonOriginMigrationFailed();", null);
     }
 
     private boolean trustedPage() {

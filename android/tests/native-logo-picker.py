@@ -34,7 +34,7 @@ stubs = {
 'android/net/Uri.java': '''package android.net;public final class Uri {
 private final String text;private final java.net.URI value;private Uri(String text){this.text=text;this.value=java.net.URI.create(text);}
 public static Uri parse(String text){return new Uri(text);}public String getScheme(){return value.getScheme();}
-public String getAuthority(){return value.getAuthority();}public String getFragment(){return value.getFragment();}
+public String getHost(){return value.getHost();}public String getUserInfo(){return value.getUserInfo();}public int getPort(){return value.getPort();}public String getPath(){return value.getPath();}public String getQuery(){return value.getQuery();}public String getAuthority(){return value.getAuthority();}public String getFragment(){return value.getFragment();}
 @Override public String toString(){return text;}@Override public boolean equals(Object other){return other instanceof Uri&&text.equals(((Uri)other).text);}@Override public int hashCode(){return text.hashCode();}
 }''',
 'android/content/ClipData.java': '''package android.content;import android.net.Uri;public final class ClipData {
@@ -47,18 +47,18 @@ public static final int FLAG_GRANT_READ_URI_PERMISSION=1;public final String act
 public Intent(String action){this.action=action;}public Intent addCategory(String c){categories.add(c);return this;}public Intent setType(String t){type=t;return this;}public Intent putExtra(String k,String[] v){extras.put(k,v);return this;}public Intent putExtra(String k,boolean v){extras.put(k,v);return this;}public Intent addFlags(int f){flags|=f;return this;}public Intent setData(Uri v){data=v;return this;}public Uri getData(){return data;}public Intent setClipData(ClipData v){clips=v;return this;}public ClipData getClipData(){return clips;}
 }'''
 }
-methods = '\n'.join(method(name) for name in ('isHome', 'trustedPage', 'isLogoImageChooser', 'showLogoFileChooser', 'completeLogoPicker', 'handleLogoImageResult'))
+methods = '\n'.join(method(name) for name in ('secureAssetHost', 'isHome', 'trustedPage', 'isLogoImageChooser', 'showLogoFileChooser', 'completeLogoPicker', 'handleLogoImageResult'))
 stubs['ro/caiuspoputa/agendasalon/NativeLogoPickerTest.java'] = '''package ro.caiuspoputa.agendasalon;
 import java.util.*;import android.net.Uri;import android.content.Intent;import android.content.ClipData;
 interface ValueCallback<T>{void onReceiveValue(T value);}
-final class WebView {String url="file:///android_asset/index.html";String getUrl(){return url;}}
+final class WebView {String url="https://appassets.androidplatform.net/assets/index.html";String getUrl(){return url;}}
 final class WebChromeClient {static final class FileChooserParams {static final int MODE_OPEN=0,MODE_OPEN_MULTIPLE=1,MODE_SAVE=3;final int mode;final boolean capture;final String[] accepts;FileChooserParams(int mode,boolean capture,String... accepts){this.mode=mode;this.capture=capture;this.accepts=accepts;}int getMode(){return mode;}boolean isCaptureEnabled(){return capture;}String[] getAcceptTypes(){return accepts;}}}
 public final class NativeLogoPickerTest {
 static int checks;static void check(boolean ok,String message){checks++;if(!ok)throw new AssertionError(message);}
 static WebChromeClient.FileChooserParams params(String... types){return new WebChromeClient.FileChooserParams(0,false,types);}
 static final class Result implements ValueCallback<Uri[]> {int calls;Uri[] value;boolean fail;public void onReceiveValue(Uri[] value){calls++;this.value=value;if(fail)throw new RuntimeException("document destroyed");}}
 static final class Probe {
-private static final String HOME="file:///android_asset/index.html";private static final int PICK_LOGO_IMAGE=1004,RESULT_OK=-1;
+private static final String ASSET_HOST="appassets.androidplatform.net";private static final String HOME="https://appassets.androidplatform.net/assets/index.html";private static final int PICK_LOGO_IMAGE=1004,RESULT_OK=-1;
 boolean destroyed,finishing,activityDestroyed,documentPickerOpen,logoPickerOpen,launchFailure,resolverFailure;String pendingContactRequestId,mime="image/png";ValueCallback<Uri[]> pendingLogoCallback;WebView pendingLogoWebView,webView=new WebView();Intent launched;int request,starts,typeReads;
 boolean isFinishing(){return finishing;}boolean isDestroyed(){return activityDestroyed;}
 void startActivityForResult(Intent intent,int requestCode){starts++;if(launchFailure)throw new RuntimeException("no document picker");launched=intent;request=requestCode;}
