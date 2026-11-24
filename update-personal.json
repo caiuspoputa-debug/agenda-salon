@@ -1,9 +1,9 @@
 {
-  "versionCode": 40,
-  "versionName": "1.1.5",
+  "versionCode": 41,
+  "versionName": "1.1.6",
   "minSdk": 26,
-  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.5/Agenda-Salon-1.1.5.apk",
-  "sha256": "e9462bd7d22ec1f58d0a8e753cd9c71848e4e43c11ab8dcafacc6a63f9559d95",
+  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.6/Agenda-Salon-1.1.6.apk",
+  "sha256": "bc630d0c029c00d1b3fac5c5a6beb3be34fe2907455946ea194317bf1535f5cc",
   "size": 4829139,
-  "notes": "Actualizări directe: aplicația descarcă, verifică și deschide automat instalatorul Android. Numele salonului poate apărea sub icon prin scurtătura personalizată din Setări și se actualizează automat. Programările, setările, activarea și HA se păstrează. Trecerea de la 1.1.4 folosește încă descărcarea în browser; noul mecanism este disponibil după instalarea 1.1.5."
+  "notes": "Actualizator Android aliniat cu Agenda Frizerie: verificare zilnică, descărcare din GitHub Releases după apăsarea butonului și confirmare Android. Dacă Android cere permisiunea de instalare, revino și apasă din nou Instalează actualizarea. Programările, setările, activarea, HA și iconul se păstrează."
 }
