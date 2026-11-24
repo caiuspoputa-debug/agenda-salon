@@ -58,6 +58,10 @@ public final class NativeUpdatePolicyTest {
         // Opening the browser requires a successful recent check and a strictly newer release.
         String handoff = UpdatePolicy.REPOSITORY + "/releases/download/v1.0.19/Agenda-Salon-1.0.19.apk";
         allowed(() -> UpdatePolicy.browserUrl(handoff, "1.0.19", 30, 29, 1000, 1000));
+        if (!"https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.0.19/Agenda-Salon-1.0.19.apk"
+                .equals(UpdatePolicy.browserUrl(handoff, "1.0.19", 30, 29, 1000, 1000).toString()))
+            throw new AssertionError("Browser must use the exact Salon Pages download for the validated release");
+        checks++;
         allowed(() -> UpdatePolicy.browserUrl(handoff, "1.0.19", 30, 29, 1000, 1000 + 24L * 60 * 60 * 1000));
         rejected(() -> UpdatePolicy.browserUrl(handoff, "1.0.19", 30, 29, 1000, 1001 + 24L * 60 * 60 * 1000));
         rejected(() -> UpdatePolicy.browserUrl(handoff, "1.0.19", 29, 29, 1000, 1001));

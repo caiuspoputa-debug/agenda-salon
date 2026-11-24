@@ -43,7 +43,11 @@ final class UpdatePolicy {
         if (metadataCode <= installedCode || installedCode <= 0 || checkedAt < 0 || now < checkedAt
                 || now - checkedAt > 24L * 60 * 60 * 1000)
             throw new IllegalArgumentException("A fresh newer release is required before opening the browser");
-        return apkUrl(value, version);
+        // Validate legacy release metadata, then use the stable public Pages download.
+        // Existing clients keep their release URL; future browser downloads avoid release redirects.
+        apkUrl(value, version);
+        return new URL("https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/"
+            + version + "/Agenda-Salon-" + version + ".apk");
     }
 
     static URL networkUrl(String value) throws Exception {

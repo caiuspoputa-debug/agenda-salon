@@ -160,8 +160,8 @@ public final class MainActivity extends Activity {
                 if (request.isForMainFrame() && (isHome(uri)
                         || !originCaptured && !originComplete && isLegacyHome(uri))) return false;
                 if (request.isForMainFrame() && request.hasGesture()
-                        && ("https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.3/Agenda-Salon-Instalare.pdf".equals(uri.toString())
-                        || "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.3/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
+                        && ("https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.4/Agenda-Salon-Instalare.pdf".equals(uri.toString())
+                        || "https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.4/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, uri));
                     } catch (ActivityNotFoundException e) {

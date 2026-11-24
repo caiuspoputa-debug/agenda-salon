@@ -1,21 +1,20 @@
-# Agenda Salon 1.1.3
+# Agenda Salon 1.1.4
 
-Caius Poputa — Dezvoltator independent · © 2026.
+Caius Poputa - Dezvoltator independent · © 2026.
 
-Identificator Android: ro.caiuspoputa.agendasalon. Nume în lista aplicațiilor: Agenda Salon.
-Actualizare peste edițiile 1.1.0, 1.1.1 și 1.1.2. Ediția veche ro.salon.agenda.test are un identificator diferit.
+Icon nou: **Salon Narcisa 3D**, cu textul aprobat și alunița în dreapta imaginii. Numele aplicației rămâne Agenda Salon, iar identificatorul Android rămâne `ro.caiuspoputa.agendasalon`.
 
-**[Descarcă APK-ul 1.1.3 direct](https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.3/Agenda-Salon-1.1.3.apk)** — același fișier semnat, fără recompilare, SHA-256 `b5e60ea4ebddfc9bd1421391893c1d2219a1c5c979dfdb76537282f50debd600`. Linkurile GitHub Releases au returnat erori 502/503 și timeouturi; catalogul comun servește acum APK-ul și ghidurile prin GitHub Pages. Deschide APK-ul descărcat și confirmă actualizarea peste aplicația existentă, fără dezinstalare sau import de backup. Versiunile instalate acceptă numai ruta Releases pentru actualizare, deci această descărcare alternativă trebuie deschisă din catalog sau din linkul de mai sus.
+**[Descarcă Agenda Salon 1.1.4](https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.4/Agenda-Salon-1.1.4.apk)** · [Catalog comun](https://caiuspoputa-debug.github.io/aplicatii/).
 
-## Actualizare de la 1.1.0 / 1.1.1 / 1.1.2
+## Actualizare peste edițiile 1.1.0-1.1.3
 
-În aplicația instalată deschide Setări → Actualizări aplicație → Verifică acum și confirmă actualizarea. Se păstrează identificatorul și certificatul Android, baza locală cu programări și istoric, clienții, serviciile, prețurile, cheltuielile, setările, logo-ul, activarea și conexiunea HA, inclusiv rolul dispozitivului și modificările în așteptare. Nu dezinstala aplicația, nu șterge datele și nu importa din nou backupul pentru această actualizare.
+Descarcă APK-ul, deschide fișierul și confirmă **Actualizează** în Android. Instalează peste aplicația existentă, fără dezinstalare, ștergerea datelor sau reimportarea backupului. Actualizează cele două dispozitive pe rând și verifică agenda și indicatorul HA după fiecare.
 
-Versiunea 1.1.3 elimină permisiunea REQUEST_INSTALL_PACKAGES, descărcarea și verificarea locală a APK-urilor, instalatorul integrat și providerul dedicat instalării. Verificarea zilnică, cea manuală și popupul cu amânare rămân. Din 1.1.3, butoanele **Descarcă** / **Descarcă actualizarea** deschid linkul HTTPS oficial în browser numai după o acțiune explicită. După descărcare, utilizatorul deschide fișierul și confirmă actualizarea în Android. Android verifică compatibilitatea pachetului și a semnăturii la actualizare.
+Se păstrează certificatul, baza locală cu programări și istoric, clienții, serviciile, prețurile, cheltuielile, setările, logo-ul personalizat, activarea și conexiunea HA, inclusiv rolul, cheia și modificările în așteptare. Iconul de lansare este separat de logo-ul configurabil din interiorul aplicației. Atelier Sync și backupurile sale rămân neschimbate.
 
-Încărcarea locală HTTPS introdusă în 1.1.2 rămâne disponibilă offline. Agenda, conexiunea HA și activarea rămân în depozitele native existente. Actualizarea din versiunile anterioare folosește mecanismul deja instalat pe dispozitiv. Serviciul Atelier Sync și backupurile lui nu necesită modificări.
+Verificarea zilnică, verificarea manuală și popupul cu amânare rămân. Din **1.1.4**, butonul **Descarcă** deschide APK-ul oficial din GitHub Pages, după validarea versiunii și a sursei. Aplicația nu descarcă și nu instalează APK-uri în interior și nu cere REQUEST_INSTALL_PACKAGES. Instalarea necesită confirmarea Android.
 
-Actualizează pe rând cele două dispozitive și verifică agenda și indicatorul HA după fiecare actualizare. Clasificarea Play Protect este decisă de Google; schimbarea tehnică nu garantează eliminarea avertismentului.
+Versiunile 1.1.0-1.1.3 folosesc încă adresele GitHub Releases; dacă descărcarea lor eșuează, folosește linkul direct de mai sus. Metadatele rămân compatibile cu aceste versiuni. Versiunile precedente sunt păstrate în arhiva privată.
 
 ## Transfer cu import manual din ediția veche 1.0.23 sau anterioară
 
@@ -27,22 +26,20 @@ Actualizează pe rând cele două dispozitive și verifică agenda și indicator
 
 Prima asociere la un HA deja inițializat propune **Preia agenda HA**. Confirmarea înlocuiește agenda locală cu cea a serverului și salvează o copie locală a datelor anterioare asocierii. Verifică diferențele înainte să confirmi. Activarea și conexiunea HA se configurează separat pe fiecare instalare.
 
-- [Ghid de instalare și transfer](https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.3/Agenda-Salon-Instalare.pdf)
-- [Ghid de utilizare](https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.3/Agenda-Salon-Utilizare.pdf)
+- [Ghid de instalare și transfer](https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.4/Agenda-Salon-Instalare.pdf)
+- [Ghid de utilizare](https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.4/Agenda-Salon-Utilizare.pdf)
 - [Atelier Sync pentru Home Assistant](https://github.com/caiuspoputa-debug/atelier-sync-ha)
 
-## Semnare și actualizări
+## Semnare și compilare
 
-Certificatul public este în certificates/Caius-Poputa.cer. Amprenta SHA-256 este 95c79cbc9e68e31611c477f8cc27050a682b4ee616a5c25d6cbc40005f1d2bf6.
+Certificatul public este în `certificates/Caius-Poputa.cer`. SHA-256: `95c79cbc9e68e31611c477f8cc27050a682b4ee616a5c25d6cbc40005f1d2bf6`.
 
-Cheia privată este păstrată local. Pentru compilare, scriptul android/build.ps1 primește calea și parola din SALON_KEYSTORE_PATH și SALON_KEYSTORE_PASSWORD. Aliasul certificatului existent este geometrie-roti. Compilarea folosește Gradle 9.4.1, Android Gradle Plugin 9.2.1, Android SDK 36 / Build Tools 36.1.0 și AndroidX WebKit 1.18.0. Scriptul rulează offline, după instalarea dependențelor în cache, și verifică semnătura, alinierea și identitatea APK-ului rezultat.
+Cheia privată rămâne locală. `android/build.ps1` primește `SALON_KEYSTORE_PATH` și `SALON_KEYSTORE_PASSWORD`; aliasul existent este `geometrie-roti`. Compilarea folosește Gradle 9.4.1, AGP 9.2.1, SDK 36 / Build Tools 36.1.0 și AndroidX WebKit 1.18.0. Scriptul verifică semnătura, alinierea și identitatea APK-ului.
 
-Agenda Salon verifică actualizările la https://caiuspoputa-debug.github.io/agenda-salon/update-personal.json. Descărcările și canalul update.json ale ediției vechi au fost retrase. Versiunile vechi sunt păstrate în arhiva privată. Trecerea de la ediția veche se face prin instalarea separată și transferul descris mai sus. Noua aplicație validează sursa și versiunea înainte de deschiderea browserului. Metadatele publice păstrează hashul și dimensiunea APK-ului pentru compatibilitate cu actualizatoarele din 1.1.0–1.1.2.
-
-Serviciul de activare existent păstrează identificatorii săi de protocol. Aceștia identifică serviciul Salon, independent de numele pachetului Android. Fiecare instalare nouă primește propriul identificator aleatoriu și propria dovadă de activare semnată. PIN-ul se comunică separat.
+Canalul verificării rămâne https://caiuspoputa-debug.github.io/agenda-salon/update-personal.json. Activarea și încărcarea interfeței offline folosesc aceleași depozite și aceleași mecanisme existente.
 
 ## Verificări
 
-415 teste ale regulilor aplicației și pornirii, testele native ale deschiderii browserului, validării linkului, limitelor de timp, activării și bazei locale au trecut. Verificările acoperă lipsa descărcării APK-ului și a cererii de permisiune în codul nou, cererea explicită a utilizatorului, împiedicarea deschiderii duplicate și recuperarea când browserul lipsește.
+415 teste ale regulilor aplicației, 75 verificări ale politicii de actualizare, 53 verificări native ale deschiderii browserului și 345 verificări ale activării au trecut. Testele bazei locale acoperă păstrarea datelor, copiile anterioare actualizării și revenirea tranzacției la eroare.
 
-Testul trecerii de la interfața APK-ului semnat 1.1.2 la 1.1.3 verifică agenda, istoricul, setările, logo-ul, identitatea HA, coada nesincronizată și preferințele actualizatorului. Acesta folosește adaptoare pentru stocarea/bridge-ul Android și un Store Atelier Sync real, cu date sintetice, pentru rolurile principal și secundar. Modificările în așteptare ajung o singură dată în HA; backupul serverului este restaurabil. Datele dispozitivelor utilizatorului nu au fost accesate. Nu a fost disponibil un dispozitiv sau emulator Android pentru verificarea unei instalări efective.
+Testul 1.1.3 → 1.1.4 verifică ambele roluri HA, agenda, istoricul, setările, logo-ul, identitatea dispozitivului, cheia HA, operațiile nesincronizate și preferințele actualizatorului. Folosește adaptoare Android și un Store Atelier Sync real cu date sintetice; operațiile ajung o singură dată la server, iar backupul este restaurabil. Datele dispozitivelor utilizatorului nu au fost accesate. Nu a fost testată instalarea pe un dispozitiv Android fizic sau emulator. Clasificarea Play Protect aparține Google și nu este garantată de schimbarea iconului.

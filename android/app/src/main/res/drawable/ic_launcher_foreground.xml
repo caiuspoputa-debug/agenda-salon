@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 58 dp of the adaptive 108 dp layer keeps the approved lettering inside masks. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="23.148148%"
+    android:insetTop="23.148148%"
+    android:insetRight="23.148148%"
+    android:insetBottom="23.148148%">
+    <bitmap android:src="@drawable/salon_narcisa_icon"
+        android:gravity="fill"
+        android:filter="true"
+        android:antialias="true" />
+</inset>
