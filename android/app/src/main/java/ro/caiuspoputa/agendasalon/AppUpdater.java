@@ -1,14 +1,20 @@
 package ro.caiuspoputa.agendasalon;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
+import android.provider.Settings;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -16,6 +22,9 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -28,12 +37,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.net.ssl.SSLException;
 
-/** Foreground metadata checks; explicit actions hand off an official HTTPS URL to the browser. */
+/** Foreground update check. Download and Android installation require an explicit user action. */
 final class AppUpdater {
     interface Listener { void result(String id, JSONObject result); }
     private final Activity activity;
     private final Listener listener;
     private final UpdateResultMailbox resultMailbox = new UpdateResultMailbox();
+    private final ExecutorService executor = boundedExecutor("salon-update-download");
     // A stuck platform DNS/read must not postpone the result or create an unbounded queue of retries.
     private final ExecutorService metadataExecutor = boundedExecutor("salon-update-check");
     private final ExecutorService disconnectExecutor = boundedExecutor("salon-update-close");
@@ -44,8 +54,26 @@ final class AppUpdater {
     private CheckOperation activeCheck;
     private final AtomicBoolean busy = new AtomicBoolean();
     private volatile boolean destroyed;
+    private volatile HttpURLConnection connection;
     private volatile Metadata available;
     private volatile long checkedAt;
+    private final Object installLock = new Object();
+    private InstallOperation activeInstall;
+    private boolean resumed;
+    static final long INSTALL_TIMEOUT_MILLIS = 300000;
+    private static final class InstallOperation {
+        final String id;
+        final Metadata metadata;
+        final long deadline;
+        volatile boolean finished;
+        boolean permissionRequested, sawPause, started, ready;
+        volatile Future<?> worker;
+        ScheduledFuture<?> timeout;
+        InstallOperation(String id, Metadata metadata) {
+            this.id = id; this.metadata = metadata;
+            deadline = SystemClock.elapsedRealtime() + INSTALL_TIMEOUT_MILLIS;
+        }
+    }
 
     private static final class CheckOperation {
         final String id;
@@ -102,7 +130,11 @@ final class AppUpdater {
     }
 
     private PackageInfo installed() throws Exception {
-        return activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+        return activity.getPackageManager().getPackageInfo(activity.getPackageName(), signatureFlags());
+    }
+
+    private static int signatureFlags() {
+        return Build.VERSION.SDK_INT >= 28 ? PackageManager.GET_SIGNING_CERTIFICATES : PackageManager.GET_SIGNATURES;
     }
 
     private static long versionCode(PackageInfo info) {
@@ -223,14 +255,15 @@ final class AppUpdater {
     }
 
     void openDownload(String id) {
-        // A repeated bridge delivery must not open a second browser window.
+        synchronized (installLock) {
+            if (activeInstall != null && activeInstall.id.equals(id)) return;
+        }
         if (resultMailbox.isTerminal(id) || !begin(id)) return;
         resultMailbox.started(id);
         final Metadata metadata = available;
-        final URL downloadUrl;
         try {
             if (metadata == null) throw new IOException("No checked update");
-            downloadUrl = UpdatePolicy.browserUrl(metadata.url.toString(), metadata.name, metadata.code,
+            UpdatePolicy.installUrl(metadata.url.toString(), metadata.name, metadata.code,
                 versionCode(installed()), checkedAt, SystemClock.elapsedRealtime());
             if (metadata.minSdk > Build.VERSION.SDK_INT) throw new IOException("Unsupported Android version");
         } catch (Exception failure) {
@@ -238,21 +271,144 @@ final class AppUpdater {
             emit(id, result("error", "Verifică mai întâi dacă există o actualizare nouă compatibilă."));
             return;
         }
-        try {
-            if (destroyed) return;
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl.toString()));
-            intent.addCategory(Intent.CATEGORY_BROWSABLE);
-            activity.startActivity(intent);
-            emit(id, result("browser", "Descărcarea a fost deschisă în browser. După descărcare, deschide APK-ul și confirmă actualizarea în Android. Datele se păstrează."));
-        } catch (RuntimeException failure) {
-            emit(id, result("error", "Nu am putut deschide browserul. Verifică dacă ai un browser disponibil și reîncearcă."));
-        } finally { busy.set(false); }
+        final InstallOperation operation = new InstallOperation(id, metadata);
+        synchronized (installLock) {
+            if (destroyed) { busy.set(false); return; }
+            activeInstall = operation;
+            operation.timeout = watchdog.schedule(() -> {
+                if (finishInstall(operation, "error", "Actualizarea a durat prea mult. Datele sunt păstrate; poți reîncerca.")) {
+                    if (operation.worker != null) operation.worker.cancel(true);
+                    disconnectAsync(connection);
+                }
+            }, INSTALL_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+        }
+        if (!activity.getPackageManager().canRequestPackageInstalls()) {
+            operation.permissionRequested = true;
+            emit(id, result("permission", "Permite instalarea din Agenda Salon. La revenire, actualizarea continuă automat."));
+            try {
+                activity.startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                    Uri.parse("package:" + activity.getPackageName())));
+            } catch (RuntimeException unavailable) {
+                finishInstall(operation, "error", "Permisiunea de instalare nu a fost acordată. O poți activa în setările Android pentru Agenda Salon, apoi reîncearcă.");
+            }
+        } else startDownload(operation);
+    }
+
+    // Only a user-requested, still-live update may resume after the Android permission screen.
+    void onPause() {
+        synchronized (installLock) {
+            resumed = false;
+            if (activeInstall != null && activeInstall.permissionRequested) activeInstall.sawPause = true;
+        }
+    }
+
+    void onResume() {
+        InstallOperation operation;
+        synchronized (installLock) { resumed = true; operation = activeInstall; }
+        if (destroyed || operation == null || operation.finished) return;
+        if (operation.permissionRequested && operation.sawPause) {
+            operation.permissionRequested = false;
+            if (activity.getPackageManager().canRequestPackageInstalls()) startDownload(operation);
+            else finishInstall(operation, "error", "Instalarea nu a fost permisă. Aplicația și datele rămân neschimbate; poți reîncerca.");
+        } else if (operation.ready) launchInstaller(operation);
+    }
+
+    private boolean finishInstall(InstallOperation operation, String status, String message) {
+        synchronized (installLock) {
+            if (destroyed || operation.finished || activeInstall != operation) return false;
+            operation.finished = true;
+            activeInstall = null;
+            if (operation.timeout != null) operation.timeout.cancel(false);
+            busy.set(false);
+            emit(operation.id, result(status, message));
+            return true;
+        }
+    }
+
+    private void ensureInstallActive(InstallOperation operation) throws IOException {
+        synchronized (installLock) {
+            if (activeInstall != operation || operation.finished) throw new IOException("Update no longer active");
+        }
+        ensureActive(operation.deadline);
+    }
+
+    private void startDownload(InstallOperation operation) {
+        synchronized (installLock) {
+            if (destroyed || activeInstall != operation || operation.finished || operation.started) return;
+            operation.started = true;
+        }
+        emit(operation.id, result("downloading", "Se descarcă și se verifică actualizarea…"));
+        try { operation.worker = executor.submit(() -> {
+            File partial = null;
+            Metadata metadata = operation.metadata;
+            try {
+                ensureInstallActive(operation);
+                File directory = UpdateApkProvider.directory(activity);
+                if (!directory.isDirectory() && !directory.mkdirs()) throw new IOException("Update cache unavailable");
+                partial = new File(directory, "download.part");
+                File apk = new File(directory, metadata.digest + ".apk");
+                if (apk.isFile()) {
+                    try { verifyCached(metadata, apk); }
+                    catch (Exception invalidCache) {
+                        if (!apk.delete()) throw new IOException("Cannot discard invalid update cache");
+                    }
+                }
+                if (!apk.isFile()) {
+                    download(operation, partial);
+                    ensureInstallActive(operation);
+                    verifyArchive(metadata, partial);
+                    if (!partial.renameTo(apk)) throw new IOException("Cannot finalize update cache");
+                } else verifyArchive(metadata, apk);
+                ensureInstallActive(operation);
+                File[] cached = directory.listFiles();
+                if (cached != null) for (File old : cached) {
+                    if (!old.getName().equals(apk.getName()) && old.getName().matches("[a-f0-9]{64}\\.apk")) old.delete();
+                }
+                activity.runOnUiThread(() -> {
+                    synchronized (installLock) {
+                        if (destroyed || activeInstall != operation || operation.finished) return;
+                        operation.ready = true;
+                    }
+                    launchInstaller(operation);
+                });
+            } catch (Exception failure) {
+                finishInstall(operation, "error", "Actualizarea nu a putut fi descărcată sau verificată. Versiunea instalată și datele au fost păstrate.");
+            } finally {
+                if (partial != null && partial.exists()) partial.delete();
+            }
+        });
+        if (operation.finished) operation.worker.cancel(true);
+        } catch (RejectedExecutionException occupied) {
+            finishInstall(operation, "error", "Descărcarea anterioară încă se închide. Reîncearcă în câteva secunde.");
+        }
+    }
+
+    private void launchInstaller(InstallOperation operation) {
+        synchronized (installLock) {
+            if (destroyed || activeInstall != operation || operation.finished) return;
+            if (!resumed) {
+                emit(operation.id, result("downloading", "Actualizarea este pregătită. Revino în Agenda Salon pentru confirmarea instalării."));
+                return;
+            }
+            try {
+                ensureInstallActive(operation);
+                if (!activity.getPackageManager().canRequestPackageInstalls()) throw new IOException("Permission revoked");
+                Uri uri = UpdateApkProvider.uri(activity, operation.metadata.digest);
+                Intent intent = new Intent(Intent.ACTION_VIEW).setDataAndType(uri, UpdateApkProvider.MIME);
+                intent.setClipData(ClipData.newRawUri("Agenda Salon", uri));
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                activity.startActivity(intent);
+                finishInstall(operation, "installer", "Confirmă actualizarea în fereastra Android. Programările, setările și activarea se păstrează.");
+            } catch (Exception failure) {
+                finishInstall(operation, "error", "Instalatorul Android nu a putut fi deschis. Verifică permisiunea de instalare și reîncearcă.");
+            }
+        }
     }
 
     private boolean begin(String id) {
         if (!validId(id) || destroyed) return false;
         if (!busy.compareAndSet(false, true)) {
-            emit(id, result("error", "O acțiune de actualizare este deja în curs."));
+            emit(id, result("error", "O verificare sau instalare este deja în curs."));
             return false;
         }
         return true;
@@ -279,6 +435,36 @@ final class AppUpdater {
         if (destroyed) return;
         if (!resultMailbox.publish(id, result)) return;
         activity.runOnUiThread(() -> { if (!destroyed) listener.result(id, result); });
+    }
+
+    private HttpURLConnection open(URL url, long deadline) throws Exception {
+        for (int hop = 0; hop <= 5; hop++) {
+            ensureActive(deadline);
+            URL allowed = UpdatePolicy.networkUrl(url.toString());
+            HttpURLConnection next = (HttpURLConnection)allowed.openConnection();
+            connection = next;
+            next.setInstanceFollowRedirects(false);
+            int remaining = (int)Math.max(1, Math.min(15000, deadline - SystemClock.elapsedRealtime()));
+            next.setConnectTimeout(Math.min(12000, remaining));
+            next.setReadTimeout(remaining);
+            next.setRequestProperty("User-Agent", "Agenda-Salon-Android");
+            next.setRequestProperty("Accept-Encoding", "identity");
+            int code;
+            try { code = next.getResponseCode(); }
+            catch (Exception failure) { next.disconnect(); throw failure; }
+            if (code == HttpURLConnection.HTTP_OK) return next;
+            String location = next.getHeaderField("Location");
+            next.disconnect();
+            if ((code != 301 && code != 302 && code != 303 && code != 307 && code != 308) || location == null)
+                throw new IOException("Update server returned " + code);
+            url = new URL(allowed, location);
+        }
+        throw new IOException("Too many update redirects");
+    }
+
+    private void ensureActive(long deadline) throws IOException {
+        if (destroyed || Thread.currentThread().isInterrupted() || SystemClock.elapsedRealtime() > deadline)
+            throw new IOException("Update interrupted");
     }
 
     private byte[] readMetadata(CheckOperation operation) throws Exception {
@@ -315,6 +501,70 @@ final class AppUpdater {
         } finally { disconnectAsync(request, input); operation.connection = null; }
     }
 
+    private void download(InstallOperation operation, File destination) throws Exception {
+        Metadata metadata = operation.metadata;
+        long deadline = operation.deadline;
+        URL url = UpdatePolicy.installUrl(metadata.url.toString(), metadata.name, metadata.code,
+            versionCode(installed()), checkedAt, SystemClock.elapsedRealtime());
+        HttpURLConnection request = open(url, deadline);
+        try {
+            long contentLength = request.getContentLengthLong();
+            if (contentLength != -1 && contentLength != metadata.size) throw new IOException("Unexpected APK length");
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            long size = 0;
+            try (InputStream input = request.getInputStream(); FileOutputStream output = new FileOutputStream(destination)) {
+                byte[] buffer = new byte[16384]; int count;
+                while ((count = input.read(buffer)) != -1) {
+                    ensureInstallActive(operation);
+                    size += count;
+                    if (size > metadata.size) throw new IOException("APK too large");
+                    digest.update(buffer, 0, count);
+                    output.write(buffer, 0, count);
+                }
+                output.getFD().sync();
+            }
+            ensureInstallActive(operation);
+            UpdatePolicy.verifyIntegrity(metadata.size, size, metadata.digest, hex(digest.digest()));
+        } finally { request.disconnect(); connection = null; }
+    }
+
+    private static void verifyCached(Metadata metadata, File file) throws Exception {
+        if (file.length() != metadata.size || file.length() > UpdatePolicy.MAX_APK_BYTES) throw new IOException("Invalid cached APK size");
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (InputStream input = new java.io.FileInputStream(file)) {
+            byte[] buffer = new byte[16384]; int count;
+            while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count);
+        }
+        UpdatePolicy.verifyIntegrity(metadata.size, file.length(), metadata.digest, hex(digest.digest()));
+    }
+
+    private static String hex(byte[] bytes) {
+        StringBuilder text = new StringBuilder(bytes.length * 2);
+        for (byte value : bytes) text.append(String.format(java.util.Locale.ROOT, "%02x", value & 255));
+        return text.toString();
+    }
+
+    private static Set<String> signers(PackageInfo info) throws Exception {
+        Signature[] signatures = Build.VERSION.SDK_INT >= 28 && info.signingInfo != null
+            ? info.signingInfo.getApkContentsSigners() : info.signatures;
+        if (signatures == null || signatures.length == 0) throw new IOException("APK signer unavailable");
+        Set<String> result = new HashSet<>();
+        for (Signature signature : signatures) result.add(hex(MessageDigest.getInstance("SHA-256").digest(signature.toByteArray())));
+        return result;
+    }
+
+    private void verifyArchive(Metadata metadata, File file) throws Exception {
+        PackageInfo archive = activity.getPackageManager().getPackageArchiveInfo(file.getAbsolutePath(), signatureFlags());
+        PackageInfo local = installed();
+        if (archive == null || !activity.getPackageName().equals(archive.packageName)
+                || versionCode(archive) != metadata.code || versionCode(archive) <= versionCode(local)
+                || !metadata.name.equals(archive.versionName) || archive.applicationInfo == null
+                || archive.applicationInfo.minSdkVersion > Build.VERSION.SDK_INT
+                || archive.applicationInfo.minSdkVersion != metadata.minSdk
+                || !signers(local).equals(signers(archive)))
+            throw new IOException("APK does not match installed application");
+    }
+
     void destroy() {
         CheckOperation check;
         synchronized (checkLock) {
@@ -328,9 +578,20 @@ final class AppUpdater {
                 if (check.worker != null) check.worker.cancel(true);
             }
         }
+        synchronized (installLock) {
+            if (activeInstall != null) {
+                activeInstall.finished = true;
+                if (activeInstall.timeout != null) activeInstall.timeout.cancel(false);
+                if (activeInstall.worker != null) activeInstall.worker.cancel(true);
+                activeInstall = null;
+            }
+        }
         watchdog.shutdownNow();
         metadataExecutor.shutdownNow();
         if (check != null) disconnectAsync(check.connection);
+        executor.shutdownNow();
+        HttpURLConnection active = connection;
+        disconnectAsync(active);
         disconnectExecutor.shutdown();
     }
 }

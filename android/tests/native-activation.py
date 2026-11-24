@@ -85,7 +85,9 @@ protected void onResume(){resumes++;}protected void onNewIntent(android.content.
 void startActivity(android.content.Intent intent){lastIntent=intent;starts++;}void finish(){finishing=true;}boolean isFinishing(){return finishing;}
 void setIntent(android.content.Intent intent){currentIntent=intent;}}
 class ActivationActivity {}
+class UpdaterProbe {void onResume(){}}
 class MainProbe extends BaseActivity {
+UpdaterProbe appUpdater;
 boolean destroyed,activationReady,activationRedirecting;int agendaOpens;
 public void onCreate(android.os.Bundle state){
 ''' + gate_prefix.replace('        super.onCreate(savedInstanceState);', '') + '''

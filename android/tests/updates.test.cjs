@@ -48,7 +48,7 @@ test('malformed response is rejected without accepting update data',()=>{
  for(const raw of [null,[],{},'{',' '.repeat(16001),{status:'available',versionCode:2,versionName:'abc'}])assert.throws(()=>result(raw));
 });
 test('unknown callback types cannot accidentally finish a check',()=>{
- const s=setup();s.manager.check();s.reply({status:'browser'});assert.equal(s.manager.getStatus().busy,true);s.reply({status:'current'});assert.equal(s.manager.getStatus().status,'current');
+ const s=setup();s.manager.check();s.reply({status:'installer'});assert.equal(s.manager.getStatus().busy,true);s.reply({status:'current'});assert.equal(s.manager.getStatus().status,'current');
 });
 test('destroyed controller cannot start another check from queued wake or old callbacks',()=>{
  const s=setup();const callback=s.win.onAppUpdateResult;s.manager.check();s.manager.destroy();callback(s.calls[0].id,available);s.run(1500);assert.equal(s.calls.length,1);assert.equal(s.manager.getStatus().available,null);assert.equal(s.win.onAppUpdateResult,undefined);
@@ -77,16 +77,16 @@ test('a failed fresh check cannot offer stale metadata from an earlier available
  const s=setup();s.manager.check();s.reply(available);assert.ok(s.manager.getStatus().available);s.manager.check();assert.equal(s.manager.getStatus().available,null);s.reply({status:'error'});assert.equal(s.manager.getStatus().available,null);assert.equal(s.manager.getStatus().status,'error');
 });
 
-test('browser handoff responses are bounded; former native installer statuses are rejected',()=>{
- for(const status of ['browser']){
+test('native install responses are bounded; obsolete browser response is rejected',()=>{
+ for(const status of ['downloading','permission','installer']){
   assert.deepEqual(result({status,message:'Actualizare Android'}),{status,message:'Actualizare Android'});
   assert.equal(result(JSON.stringify({status,message:'x'.repeat(1100)})).message.length,1000);
  }
- for(const status of ['downloading','permission','installer'])assert.throws(()=>result({status}));
+ for(const status of ['browser','silent-install'])assert.throws(()=>result({status}));
 });
-test('browser handoff cannot replace metadata or open a browser during an automatic check',()=>{
+test('installer progress cannot replace metadata or start installation during an automatic check',()=>{
  const s=setup();s.run(1500);const id=s.calls[0].id;
- for(const status of ['browser']){s.reply({status},id);assert.equal(s.manager.getStatus().busy,true);assert.equal(s.writes.length,0);assert.equal(s.calls.filter(call=>call.kind==='open').length,0);}
+ for(const status of ['downloading','permission','installer']){s.reply({status},id);assert.equal(s.manager.getStatus().busy,true);assert.equal(s.writes.length,0);assert.equal(s.calls.filter(call=>call.kind==='open').length,0);}
  s.reply(available);assert.equal(s.manager.getStatus().status,'available');assert.equal(s.calls.filter(call=>call.kind==='open').length,0);
 });
 

@@ -29,7 +29,7 @@ final class UpdateResultMailbox {
     private void stage(String id, String stage) {
         if (closed || !validId(id)) return;
         Entry previous = entries.get(id);
-        if (previous != null && ("terminal".equals(previous.stage)
+        if (previous != null && ("terminal".equals(previous.stage) || "progress".equals(previous.stage)
                 || "started".equals(previous.stage) && "queued".equals(stage))) return;
         save(id, stage, null);
     }
@@ -39,14 +39,14 @@ final class UpdateResultMailbox {
         Entry previous = entries.get(id);
         if (previous != null && "terminal".equals(previous.stage)) return false;
         String status = result.optString("status", "");
-        if (!("available".equals(status) || "current".equals(status)
-                || "error".equals(status) || "browser".equals(status))) return false;
+        if (!("downloading".equals(status) || "available".equals(status) || "current".equals(status)
+                || "error".equals(status) || "permission".equals(status) || "installer".equals(status))) return false;
         String encoded = result.toString();
         if (encoded == null || encoded.length() > MAX_RESULT_CHARS) {
             encoded = "{\"status\":\"error\",\"message\":\"Răspunsul actualizării nu este valid. Reîncearcă.\"}";
             status = "error";
         }
-        save(id, "terminal", encoded);
+        save(id, ("downloading".equals(status) || "permission".equals(status)) ? "progress" : "terminal", encoded);
         return true;
     }
 

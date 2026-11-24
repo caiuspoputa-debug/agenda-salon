@@ -160,8 +160,8 @@ public final class MainActivity extends Activity {
                 if (request.isForMainFrame() && (isHome(uri)
                         || !originCaptured && !originComplete && isLegacyHome(uri))) return false;
                 if (request.isForMainFrame() && request.hasGesture()
-                        && ("https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.4/Agenda-Salon-Instalare.pdf".equals(uri.toString())
-                        || "https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.4/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
+                        && ("https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.5/Agenda-Salon-Instalare.pdf".equals(uri.toString())
+                        || "https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.5/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, uri));
                     } catch (ActivityNotFoundException e) {
@@ -208,7 +208,13 @@ public final class MainActivity extends Activity {
         super.onResume();
         // onResume also runs after an onCreate redirected without initialization.
         if (!activationReady || destroyed || isFinishing()) return;
-        redirectForActivation();
+        if (redirectForActivation()) return;
+        if (appUpdater != null) appUpdater.onResume();
+    }
+
+    @Override protected void onPause() {
+        if (appUpdater != null) appUpdater.onPause();
+        super.onPause();
     }
 
     @Override protected void onNewIntent(Intent intent) {
@@ -375,6 +381,21 @@ public final class MainActivity extends Activity {
     }
 
     public final class AndroidBridge {
+        @JavascriptInterface public void syncHomeShortcutName(String name) {
+            if (name == null || name.length() > 100) return;
+            runOnUiThread(() -> {
+                if (trustedPage()) LauncherShortcut.syncExisting(MainActivity.this, name);
+            });
+        }
+
+        @JavascriptInterface public void nameHomeShortcut(String name) {
+            if (name == null || name.length() > 100) return;
+            runOnUiThread(() -> {
+                if (!trustedPage()) return;
+                Toast.makeText(MainActivity.this, LauncherShortcut.request(MainActivity.this, name), Toast.LENGTH_LONG).show();
+            });
+        }
+
         @JavascriptInterface public String appUpdateInfo() {
             return appUpdater == null || destroyed ? "{}" : appUpdater.info();
         }

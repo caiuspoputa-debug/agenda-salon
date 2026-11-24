@@ -1,5 +1,6 @@
 package ro.caiuspoputa.agendasalon;
 
+import java.net.URI;
 import java.net.URL;
 
 /** No Android dependency: rules shared by metadata parsing, network and native tests. */
@@ -38,21 +39,35 @@ final class UpdatePolicy {
         return new URL(expected);
     }
 
-    static URL browserUrl(String value, String version, long metadataCode, long installedCode,
+    static URL installUrl(String value, String version, long metadataCode, long installedCode,
                           long checkedAt, long now) throws Exception {
         if (metadataCode <= installedCode || installedCode <= 0 || checkedAt < 0 || now < checkedAt
                 || now - checkedAt > 24L * 60 * 60 * 1000)
-            throw new IllegalArgumentException("A fresh newer release is required before opening the browser");
-        // Validate legacy release metadata, then use the stable public Pages download.
-        // Existing clients keep their release URL; future browser downloads avoid release redirects.
+            throw new IllegalArgumentException("A fresh newer release is required before installation");
         apkUrl(value, version);
         return new URL("https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/"
             + version + "/Agenda-Salon-" + version + ".apk");
     }
 
+    static void verifyIntegrity(long expectedSize, long actualSize, String expectedDigest, String actualDigest) {
+        if (expectedSize <= 0 || expectedSize > MAX_APK_BYTES || actualSize != expectedSize
+                || !digest(expectedDigest).equals(digest(actualDigest)))
+            throw new IllegalArgumentException("Update size or SHA-256 mismatch");
+    }
+
     static URL networkUrl(String value) throws Exception {
-        // Only the small metadata document is fetched by this app. APK redirects belong to the browser.
-        if (!METADATA_URL.equals(value)) throw new IllegalArgumentException("Unexpected metadata endpoint");
-        return new URL(METADATA_URL);
+        if (value == null || value.length() > 8192) throw new IllegalArgumentException("Invalid update URL");
+        URI uri = new URI(value);
+        if (!"https".equals(uri.getScheme()) || uri.getRawUserInfo() != null
+                || uri.getRawFragment() != null || (uri.getPort() != -1 && uri.getPort() != 443))
+            throw new IllegalArgumentException("Only authenticated HTTPS update endpoints are allowed");
+        if (!"caiuspoputa-debug.github.io".equals(uri.getHost()) || uri.getRawQuery() != null)
+            throw new IllegalArgumentException("Unexpected update endpoint");
+        if (!METADATA_URL.equals(value)) {
+            java.util.regex.Matcher match = java.util.regex.Pattern.compile(
+                "https://caiuspoputa-debug\\.github\\.io/aplicatii/downloads/salon/([0-9]{1,6}\\.[0-9]{1,6}\\.[0-9]{1,6})/Agenda-Salon-\\1\\.apk").matcher(value);
+            if (!match.matches()) throw new IllegalArgumentException("Unexpected APK endpoint");
+        }
+        return uri.toURL();
     }
 }

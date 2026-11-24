@@ -6,8 +6,8 @@ android {
         applicationId 'ro.caiuspoputa.agendasalon'
         minSdk 26
         targetSdk 36
-        versionCode 39
-        versionName '1.1.4'
+        versionCode 40
+        versionName '1.1.5'
     }
     buildTypes { release { minifyEnabled false } }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }

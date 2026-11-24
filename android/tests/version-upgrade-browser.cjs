@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{spawn}=require('node:child_process'),readline=require('node:readline'),{chromium}=require('playwright');
-const assets=path.resolve(__dirname,'../app/src/main/assets'),out=path.resolve(__dirname,'../../../salon-release-1.1.4');
+const assets=path.resolve(__dirname,'../app/src/main/assets'),out=path.resolve(__dirname,'../../../salon-release-1.1.5');
 const previous=path.join(out,'previous-assets');
 require(path.join(assets,'app.js'));const C=global.SalonCore,S=require(path.join(assets,'sync.js'));
 const clone=x=>JSON.parse(JSON.stringify(x)),KEY='atelier.app-updates.v1',HOME='https://appassets.androidplatform.net/assets/index.html';
@@ -20,7 +20,7 @@ function call(body){return new Promise(resolve=>{const id=++sequence;pending.set
    await context.addInitScript(({version,disk,KEY})=>{
     window.__disk={...disk};window.__network=false;window.__acks=0;window.__writes=0;
     localStorage.setItem(KEY,disk.preferences);
-    window.Android={load:()=>__disk.state,loadDevice:()=>__disk.device,save:raw=>{__writes++;__disk.state=raw;return true;},saveLocal:(raw,device)=>{__writes++;__disk.state=raw;__disk.device=device;return true;},hasUpdateBackup:()=>true,loadUpdateBackup:()=>disk.state,exportBackup:raw=>window.__export=raw,appUpdateInfo:()=>JSON.stringify({versionName:version==='old'?'1.1.3':'1.1.4',versionCode:version==='old'?38:39}),checkAppUpdate:()=>{throw Error('Automatic check preference was lost');},installAppUpdate:()=>{throw Error('Unexpected old installation');},openAppUpdate:()=>{throw Error('Unexpected browser opening');},syncRequest:async(id,base,endpoint,token,raw)=>{const reply=__network?await auditHa(endpoint,token,JSON.parse(raw)):{ok:false,status:0,error:'Offline test'};window.salonSyncResponse(id,JSON.stringify(reply));}};
+    window.Android={load:()=>__disk.state,loadDevice:()=>__disk.device,save:raw=>{__writes++;__disk.state=raw;return true;},saveLocal:(raw,device)=>{__writes++;__disk.state=raw;__disk.device=device;return true;},hasUpdateBackup:()=>true,loadUpdateBackup:()=>disk.state,exportBackup:raw=>window.__export=raw,appUpdateInfo:()=>JSON.stringify({versionName:version==='old'?'1.1.4':'1.1.5',versionCode:version==='old'?39:40}),checkAppUpdate:()=>{throw Error('Automatic check preference was lost');},installAppUpdate:()=>{throw Error('Unexpected old installation');},openAppUpdate:()=>{throw Error('Unexpected browser opening');},syncRequest:async(id,base,endpoint,token,raw)=>{const reply=__network?await auditHa(endpoint,token,JSON.parse(raw)):{ok:false,status:0,error:'Offline test'};window.salonSyncResponse(id,JSON.stringify(reply));}};
    },{version,disk,KEY});
    const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(version==='old'?origin+'/index.html':HOME);await page.locator('.shell').waitFor();
    return{context,page};
@@ -48,6 +48,6 @@ function call(body){return new Promise(resolve=>{const id=++sequence;pending.set
    const reopen=await open('new',final,role,width);assert.deepEqual(JSON.parse(await reopen.page.evaluate(()=>__disk.state)),state);await reopen.context.close();
   }
   const backup=(await call({path:'/verify-backup'})).body;assert.equal(backup.restorable,true);assert.deepEqual(errors,[]);assert(requests.every(r=>!r.bootstrap&&r.endpoint!=='/v1/register'));
-  fs.writeFileSync(path.join(out,'Upgrade-HA-browser.json'),JSON.stringify({passed:true,cases:result,backupRestorable:true,noNewRegistration:true,noServerBootstrap:true,errors,requests,physicalDeviceTested:false},null,2));console.log('PASS 1.1.3 APK UI -> 1.1.4 UI: both roles, exact agenda/settings/HA credentials/outbox, updater preferences, real HA Store sync and backup restore');
+  fs.writeFileSync(path.join(out,'Upgrade-HA-browser.json'),JSON.stringify({passed:true,cases:result,backupRestorable:true,noNewRegistration:true,noServerBootstrap:true,errors,requests,physicalDeviceTested:false},null,2));console.log('PASS 1.1.4 APK UI -> 1.1.5 UI: both roles, exact agenda/settings/HA credentials/outbox, updater preferences, real HA Store sync and backup restore');
  }finally{await browser.close();worker.stdin.end();}
 })().catch(e=>{console.error(e);process.exitCode=1;worker.stdin.end();});
