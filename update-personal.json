@@ -1,9 +1,9 @@
 {
-  "versionCode": 39,
-  "versionName": "1.1.4",
+  "versionCode": 40,
+  "versionName": "1.1.5",
   "minSdk": 26,
-  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.4/Agenda-Salon-1.1.4.apk",
-  "sha256": "160c029aa8e8d9dbb827a15eab19b40a21cca4d46ca3450d8deb6e5befc4122c",
-  "size": 4820947,
-  "notes": "Icon nou Salon Narcisa 3D. Programările, istoricul, setările, activarea și HA se păstrează. Din 1.1.4, descărcările viitoare folosesc linkul direct GitHub Pages. Dacă descărcarea versiunii instalate eșuează, folosește APK-ul din catalogul comun și actualizează fără dezinstalare."
+  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.5/Agenda-Salon-1.1.5.apk",
+  "sha256": "e9462bd7d22ec1f58d0a8e753cd9c71848e4e43c11ab8dcafacc6a63f9559d95",
+  "size": 4829139,
+  "notes": "Actualizări directe: aplicația descarcă, verifică și deschide automat instalatorul Android. Numele salonului poate apărea sub icon prin scurtătura personalizată din Setări și se actualizează automat. Programările, setările, activarea și HA se păstrează. Trecerea de la 1.1.4 folosește încă descărcarea în browser; noul mecanism este disponibil după instalarea 1.1.5."
 }
