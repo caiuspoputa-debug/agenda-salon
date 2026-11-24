@@ -16,8 +16,8 @@ public final class NativeUpdatePolicyTest {
         if (!"https://caiuspoputa-debug.github.io/agenda-salon/update-personal.json".equals(UpdatePolicy.METADATA_URL))
             throw new AssertionError("Metadata must use the exact Salon Pages URL");
         checks++;
-        rejected(() -> UpdatePolicy.networkUrl("https://release-assets.githubusercontent.com/github-production-release-asset/123/a?sp=r&sig=x"));
-        rejected(() -> UpdatePolicy.networkUrl("https://objects.githubusercontent.com/github-production-release-asset/123/a"));
+        allowed(() -> UpdatePolicy.networkUrl("https://release-assets.githubusercontent.com/github-production-release-asset/123/a?sp=r&sig=x"));
+        allowed(() -> UpdatePolicy.networkUrl("https://objects.githubusercontent.com/github-production-release-asset/123/a"));
         for (String url : new String[]{
                 "http://github.com/caiuspoputa-debug/agenda-salon/releases/latest/download/update.json",
                 "https://evil.example/a", "file:///android_asset/index.html", "https://github.com.evil.example/a",
@@ -58,9 +58,9 @@ public final class NativeUpdatePolicyTest {
         // Installation requires a successful recent check and a strictly newer release.
         String handoff = UpdatePolicy.REPOSITORY + "/releases/download/v1.0.19/Agenda-Salon-1.0.19.apk";
         allowed(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 1000));
-        if (!"https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.0.19/Agenda-Salon-1.0.19.apk"
+        if (!handoff
                 .equals(UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 1000).toString()))
-            throw new AssertionError("Installer must use the exact Salon Pages download for the validated release");
+            throw new AssertionError("Installer must use the validated GitHub Release, like Frizerie");
         checks++;
         allowed(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 1000 + 24L * 60 * 60 * 1000));
         rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 1001 + 24L * 60 * 60 * 1000));
@@ -74,7 +74,7 @@ public final class NativeUpdatePolicyTest {
                 "file:///sdcard/Download/update.apk", "intent://github.com/#Intent;end", handoff.replace("1.0.19.apk", "1.0.18.apk")})
             rejected(() -> UpdatePolicy.installUrl(invalid, "1.0.19", 30, 29, 1000, 1001));
         String direct = "https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.5/Agenda-Salon-1.1.5.apk";
-        allowed(() -> UpdatePolicy.networkUrl(direct));
+        rejected(() -> UpdatePolicy.networkUrl(direct));
         for (String invalid : new String[]{direct+"?x=1",direct+"#x",direct.replace("https:","http:"),direct.replace("1.1.5.apk","1.1.4.apk"),direct.replace("/salon/","/other/"),direct.replace(".apk","%2eapk"),direct.replace("/1.1.5/","/../1.1.5/"),direct.replace("github.io/","github.io:443/"),direct.replace("https://","https://user@")})
             rejected(() -> UpdatePolicy.networkUrl(invalid));
         allowed(() -> UpdatePolicy.verifyIntegrity(10,10,digest,digest.toLowerCase(java.util.Locale.ROOT)));

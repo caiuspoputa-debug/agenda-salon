@@ -1,49 +1,39 @@
-# Agenda Salon 1.1.5
+# Agenda Salon 1.1.6
 
 Caius Poputa - Dezvoltator independent · © 2026.
 
-Icon nou: **Salon Narcisa 3D**, cu textul aprobat și alunița în dreapta imaginii. Numele aplicației rămâne Agenda Salon, iar identificatorul Android rămâne `ro.caiuspoputa.agendasalon`.
+**[Descarcă Agenda Salon 1.1.6](https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.6/Agenda-Salon-1.1.6.apk)** · [Catalog comun](https://caiuspoputa-debug.github.io/aplicatii/).
 
-**[Descarcă Agenda Salon 1.1.5](https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.5/Agenda-Salon-1.1.5.apk)** · [Catalog comun](https://caiuspoputa-debug.github.io/aplicatii/).
+## Actualizare peste edițiile 1.1.x
 
-## Actualizare peste edițiile 1.1.0-1.1.3
+În Setări → Actualizări aplicație apasă **Verifică acum**, apoi **Instalează**. Confirmă actualizarea în Android. Instalează peste aplicația existentă, fără dezinstalare, ștergerea datelor sau reimportarea backupului. Actualizează cele două dispozitive pe rând și verifică agenda și indicatorul HA după fiecare.
 
-Descarcă APK-ul, deschide fișierul și confirmă **Actualizează** în Android. Instalează peste aplicația existentă, fără dezinstalare, ștergerea datelor sau reimportarea backupului. Actualizează cele două dispozitive pe rând și verifică agenda și indicatorul HA după fiecare.
+Rămân același identificator `ro.caiuspoputa.agendasalon` și același certificat. Se păstrează programările, istoricul, clienții, serviciile și ordinea lor, prețurile, cheltuielile, setările, logo-ul, activarea și configurația HA, inclusiv rolul, cheia și operațiile nesincronizate. Atelier Sync și backupurile sale rămân neschimbate.
 
-Se păstrează certificatul, baza locală cu programări și istoric, clienții, serviciile, prețurile, cheltuielile, setările, logo-ul personalizat, activarea și conexiunea HA, inclusiv rolul, cheia și modificările în așteptare. Iconul de lansare este separat de logo-ul configurabil din interiorul aplicației. Atelier Sync și backupurile sale rămân neschimbate.
+## Actualizatorul Android, ca în Frizerie
 
-Verificarea zilnică, verificarea manuală și popupul cu amânare rămân. Din **1.1.5**, butonul **Instalează** descarcă APK-ul oficial în cache-ul privat, verifică SHA-256, dimensiunea, pachetul, versiunea și semnătura, apoi deschide instalatorul Android. Dacă este cerută permisiunea de instalare pentru Agenda Salon, la revenire procesul continuă automat. Instalarea necesită confirmarea Android. Nu se folosește browserul și nu trebuie deschis manual fișierul.
+Referința verificată este APK-ul public **Agenda Frizerie 5.0.15**. Salon folosește același flux: verificare automată la prima deschidere din zi, popup **Instalează / Mai târziu**, descărcare doar la apăsarea butonului, direct din GitHub Releases, validarea APK-ului și confirmarea finală Android. Popupul așteaptă închiderea formularelor.
 
-Versiunile 1.1.0-1.1.3 folosesc GitHub Releases, iar 1.1.4 deschide linkul Pages în browser; dacă descărcarea lor eșuează, folosește linkul direct de mai sus. Metadatele rămân compatibile cu aceste versiuni. Versiunile precedente sunt păstrate în arhiva privată.
+Dacă Android cere permisiunea de instalare din Agenda Salon, acord-o, revino și apasă din nou **Instalează actualizarea**, ca în Frizerie. Simplul acord sau revenirea în aplicație nu pornește descărcarea. Datele de verificare rămân separate de agenda salonului.
 
-## Numele de pe ecranul principal
+Sunt verificate dimensiunea, SHA-256, identificatorul aplicației, versiunea mai nouă și certificatul. Se păstrează protecțiile Salon pentru cereri repetate, întreruperea descărcării și prezentarea instalatorului numai în prim-plan. Această aliniere nu reprezintă o aprobare Play Protect.
 
-În Setări → Spațiul de lucru, **Aplică numele și sub icon** folosește direct **Numele salonului** deja salvat (de exemplu Salon Narcisa). Android cere confirmarea adăugării unei scurtături cu același icon. Apoi numele scurtăturii se actualizează automat când se schimbă numele salonului, inclusiv prin HA. Nu creează altă instalare sau bază de date. Numele din lista aplicațiilor Android rămâne Agenda Salon. Adăugarea se face separat pe fiecare dispozitiv.
+Trecerea de la 1.1.5 folosește mecanismul deja instalat, prin catalogul GitHub Pages. Din 1.1.6, descărcările viitoare folosesc GitHub Releases. Canalul metadatelor rămâne https://caiuspoputa-debug.github.io/agenda-salon/update-personal.json, compatibil cu edițiile existente. Versiunile precedente se păstrează în arhiva privată.
 
-## Transfer cu import manual din ediția veche 1.0.23 sau anterioară
+## Numele și iconul
 
-1. Verifică sincronizarea și salvează un export JSON din aplicația existentă și un backup Atelier Sync în HA.
-2. Instalează Agenda Salon pe telefon, activează instalarea online și alege rolul secundar.
-3. Păstrează sincronizarea HA oprită și importă manual fișierul JSON din Setări → Date și backup.
-4. Verifică programările, istoricul, prețurile, clienții, serviciile, cheltuielile, setările și logo-ul, inclusiv după redeschidere offline.
-5. Repetă pe tabletă cu rolul principal. Compară agenda importată cu cea din HA înainte de asociere.
+Iconul rămâne **Salon Narcisa 3D**, cu textul și alunița aprobate. În Setări → Spațiul de lucru, **Aplică numele și sub icon** folosește Numele salonului deja salvat. Android cere confirmarea primei scurtături pe fiecare dispozitiv; ulterior numele se actualizează inclusiv prin HA. Numele din lista aplicațiilor rămâne Agenda Salon.
 
-Prima asociere la un HA deja inițializat propune **Preia agenda HA**. Confirmarea înlocuiește agenda locală cu cea a serverului și salvează o copie locală a datelor anterioare asocierii. Verifică diferențele înainte să confirmi. Activarea și conexiunea HA se configurează separat pe fiecare instalare.
+## Ghiduri și HA
 
-- [Ghid de instalare și transfer](https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.5/Agenda-Salon-Instalare.pdf)
-- [Ghid de utilizare](https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.5/Agenda-Salon-Utilizare.pdf)
+- [Ghid de instalare și transfer](https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.6/Agenda-Salon-Instalare.pdf)
+- [Ghid de utilizare](https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.6/Agenda-Salon-Utilizare.pdf)
 - [Atelier Sync pentru Home Assistant](https://github.com/caiuspoputa-debug/atelier-sync-ha)
 
-## Semnare și compilare
+Transferul din ediția veche 1.0.23 sau anterioară este o instalare separată, descrisă în ghid. O instalare nouă pornește fără asociere HA; importul manual și prima asociere cer verificarea datelor. Acest transfer nu se repetă la actualizarea obișnuită 1.1.x.
 
-Certificatul public este în `certificates/Caius-Poputa.cer`. SHA-256: `95c79cbc9e68e31611c477f8cc27050a682b4ee616a5c25d6cbc40005f1d2bf6`.
+## Compilare și verificări
 
-Cheia privată rămâne locală. `android/build.ps1` primește `SALON_KEYSTORE_PATH` și `SALON_KEYSTORE_PASSWORD`; aliasul existent este `geometrie-roti`. Compilarea folosește Gradle 9.4.1, AGP 9.2.1, SDK 36 / Build Tools 36.1.0 și AndroidX WebKit 1.18.0. Scriptul verifică semnătura, alinierea și identitatea APK-ului.
+Certificatul public este în `certificates/Caius-Poputa.cer`, SHA-256 `95c79cbc9e68e31611c477f8cc27050a682b4ee616a5c25d6cbc40005f1d2bf6`. Cheia privată rămâne locală. `android/build.ps1` primește `SALON_KEYSTORE_PATH` și `SALON_KEYSTORE_PASSWORD`, aliasul existent `geometrie-roti`. Build: Gradle 9.4.1, AGP 9.2.1, SDK 36, Build Tools 36.1.0.
 
-Canalul verificării rămâne https://caiuspoputa-debug.github.io/agenda-salon/update-personal.json. Activarea și încărcarea interfeței offline folosesc aceleași depozite și aceleași mecanisme existente.
-
-## Verificări
-
-415 teste ale regulilor aplicației, 75 verificări ale politicii de actualizare, 53 verificări native ale deschiderii browserului și 345 verificări ale activării au trecut. Testele bazei locale acoperă păstrarea datelor, copiile anterioare actualizării și revenirea tranzacției la eroare.
-
-Testul 1.1.3 → 1.1.5 verifică ambele roluri HA, agenda, istoricul, setările, logo-ul, identitatea dispozitivului, cheia HA, operațiile nesincronizate și preferințele actualizatorului. Folosește adaptoare Android și un Store Atelier Sync real cu date sintetice; operațiile ajung o singură dată la server, iar backupul este restaurabil. Datele dispozitivelor utilizatorului nu au fost accesate. Nu a fost testată instalarea pe un dispozitiv Android fizic sau emulator. Clasificarea Play Protect aparține Google și nu este garantată de schimbarea iconului.
+Testele includ regulile agendei, actualizatorul nativ, acordul Android și reluarea explicită, integritatea/semnătura APK-ului, confirmarea amânată în fundal, activarea, baza locală și trecerea de la APK-ul 1.1.5 la 1.1.6 pentru ambele roluri HA. Se folosesc date sintetice și un Store Atelier Sync temporar. Rezultatele și limitele sunt în raportul Verificari-1.1.6.json al versiunii publicate; nu s-a folosit un dispozitiv Android fizic sau emulator.

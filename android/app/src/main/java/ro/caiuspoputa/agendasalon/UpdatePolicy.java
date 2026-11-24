@@ -36,7 +36,7 @@ final class UpdatePolicy {
         String expected = REPOSITORY + "/releases/download/v" + version(version)
             + "/Agenda-Salon-" + version + ".apk";
         if (!expected.equals(value)) throw new IllegalArgumentException("Unexpected APK source");
-        return new URL(expected);
+        return networkUrl(value);
     }
 
     static URL installUrl(String value, String version, long metadataCode, long installedCode,
@@ -44,9 +44,7 @@ final class UpdatePolicy {
         if (metadataCode <= installedCode || installedCode <= 0 || checkedAt < 0 || now < checkedAt
                 || now - checkedAt > 24L * 60 * 60 * 1000)
             throw new IllegalArgumentException("A fresh newer release is required before installation");
-        apkUrl(value, version);
-        return new URL("https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/"
-            + version + "/Agenda-Salon-" + version + ".apk");
+        return apkUrl(value, version);
     }
 
     static void verifyIntegrity(long expectedSize, long actualSize, String expectedDigest, String actualDigest) {
@@ -61,12 +59,18 @@ final class UpdatePolicy {
         if (!"https".equals(uri.getScheme()) || uri.getRawUserInfo() != null
                 || uri.getRawFragment() != null || (uri.getPort() != -1 && uri.getPort() != 443))
             throw new IllegalArgumentException("Only authenticated HTTPS update endpoints are allowed");
-        if (!"caiuspoputa-debug.github.io".equals(uri.getHost()) || uri.getRawQuery() != null)
-            throw new IllegalArgumentException("Unexpected update endpoint");
-        if (!METADATA_URL.equals(value)) {
-            java.util.regex.Matcher match = java.util.regex.Pattern.compile(
-                "https://caiuspoputa-debug\\.github\\.io/aplicatii/downloads/salon/([0-9]{1,6}\\.[0-9]{1,6}\\.[0-9]{1,6})/Agenda-Salon-\\1\\.apk").matcher(value);
-            if (!match.matches()) throw new IllegalArgumentException("Unexpected APK endpoint");
+        String host = uri.getHost();
+        if ("caiuspoputa-debug.github.io".equals(host)) {
+            if (!METADATA_URL.equals(value)) throw new IllegalArgumentException("Unexpected metadata endpoint");
+        } else if ("github.com".equals(host)) {
+            String path = uri.getRawPath();
+            if (uri.getRawQuery() != null || path == null
+                    || !path.startsWith("/caiuspoputa-debug/agenda-salon/releases/")
+                    || path.contains("%") || path.contains("..") || path.contains("//"))
+                throw new IllegalArgumentException("Unexpected GitHub update endpoint");
+        } else if (!"release-assets.githubusercontent.com".equals(host)
+                && !"objects.githubusercontent.com".equals(host)) {
+            throw new IllegalArgumentException("Unexpected update host");
         }
         return uri.toURL();
     }

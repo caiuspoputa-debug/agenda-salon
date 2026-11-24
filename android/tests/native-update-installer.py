@@ -66,7 +66,7 @@ public final class NativeUpdateInstallerTest {
 static int assertions,downloads;static String body;static byte[] bytes;static boolean badLength,networkFailure,pausedRead;static int statusCode=200;static String redirect;
 static final byte[] GOOD="APK fixture independently parsed by PackageManager adapter".getBytes(StandardCharsets.UTF_8);
 static final String RELEASE=UpdatePolicy.REPOSITORY+"/releases/download/v1.1.5/Agenda-Salon-1.1.5.apk";
-static final String DIRECT="https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.5/Agenda-Salon-1.1.5.apk";
+static final String DIRECT=RELEASE;
 static String hash(byte[] data)throws Exception{return java.util.HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(data));}
 static void check(boolean yes,String message){assertions++;if(!yes)throw new AssertionError(message);}
 interface Attempt{void run()throws Exception;}
@@ -84,8 +84,8 @@ static final class Probe implements AutoCloseable {
  public void close(){u.destroy();}
 }
 public static void main(String[] args)throws Exception{
- java.net.URL.setURLStreamHandlerFactory(protocol->"https".equals(protocol)?new URLStreamHandler(){protected URLConnection openConnection(java.net.URL url){boolean meta=url.toString().equals(UpdatePolicy.METADATA_URL);if(!meta){check(url.toString().equals(DIRECT),"only exact Salon Pages APK can be fetched");downloads++;}return new HttpURLConnection(url){
- public void connect(){}public boolean usingProxy(){return false;}public void disconnect(){}public int getResponseCode()throws IOException{if(!meta&&networkFailure)throw new IOException("fixture offline");return meta?200:statusCode;}
+ java.net.URL.setURLStreamHandlerFactory(protocol->"https".equals(protocol)?new URLStreamHandler(){protected URLConnection openConnection(java.net.URL url){boolean meta=url.toString().equals(UpdatePolicy.METADATA_URL),asset=url.toString().equals("https://release-assets.githubusercontent.com/github-production-release-asset/123/test?sig=fixture");if(!meta){check(url.toString().equals(DIRECT)||asset,"only the validated Salon release and its trusted redirect can be fetched");downloads++;}return new HttpURLConnection(url){
+ public void connect(){}public boolean usingProxy(){return false;}public void disconnect(){}public int getResponseCode()throws IOException{if(!meta&&networkFailure)throw new IOException("fixture offline");return meta||asset?200:statusCode;}
  public String getHeaderField(String name){return redirect;}
  public long getContentLengthLong(){return meta?body.getBytes(StandardCharsets.UTF_8).length:badLength?GOOD.length+1:-1;}
  public InputStream getInputStream()throws IOException{if(!meta&&pausedRead){try{Thread.sleep(120);}catch(InterruptedException e){throw new IOException(e);}}return new ByteArrayInputStream(meta?body.getBytes(StandardCharsets.UTF_8):bytes);}};}}:null);
@@ -101,10 +101,10 @@ public static void main(String[] args)throws Exception{
   check(new File(UpdateApkProvider.directory(p.a),"download.part").exists()==false,"partial file cleaned");
  }
  reset();try(Probe p=new Probe()){
-  p.a.pm.permission=false;p.checked();int n=downloads;p.install();p.waitFor("install","permission");check("progress".equals(p.receipt("install").getString("stage")),"permission must not finish request");check(downloads==n,"no download before consent");
-  p.u.onResume();check(downloads==n,"initial resume cannot auto-launch before permission screen");p.u.onPause();p.a.pm.permission=true;p.u.onResume();p.waitFor("install","installer");check(p.a.opened.size()==2,"permission then installer without second click");p.u.onResume();check(p.a.opened.size()==2,"resume cannot reopen installer");
+  p.a.pm.permission=false;p.checked();int n=downloads;p.install();p.waitFor("install","permission");check("terminal".equals(p.receipt("install").getString("stage")),"permission ends this request like Frizerie");check(downloads==n,"no download before consent");
+  p.u.onResume();check(downloads==n,"initial resume cannot auto-launch before permission screen");p.u.onPause();p.a.pm.permission=true;p.u.onResume();Thread.sleep(40);check(downloads==n,"granting permission never starts a download by itself");p.u.openDownload("permission-retry");p.waitFor("permission-retry","installer");check(p.a.opened.size()==2,"permission then explicit retry then installer");p.u.onResume();check(p.a.opened.size()==2,"resume cannot reopen installer");
  }
- reset();try(Probe p=new Probe()){p.a.pm.permission=false;p.checked();p.install();p.u.onPause();p.u.onResume();p.waitFor("install","error");p.noApk();}
+ reset();try(Probe p=new Probe()){p.a.pm.permission=false;p.checked();p.install();p.u.onPause();p.u.onResume();p.waitFor("install","permission");p.noApk();}
  reset();try(Probe p=new Probe()){p.checked();p.u.onPause();p.install();Thread.sleep(180);check("downloading".equals(p.status("install")),"background result waits for foreground");p.noApk();p.u.onResume();p.waitFor("install","installer");}
  for(int scenario=0;scenario<11;scenario++){
   reset();try(Probe p=new Probe()){
@@ -116,12 +116,13 @@ public static void main(String[] args)throws Exception{
    check(!new File(UpdateApkProvider.directory(p.a),"download.part").exists(),"failed transfer discarded");
   }
  }
+ reset();try(Probe p=new Probe()){p.checked();int before=downloads;statusCode=302;redirect="https://release-assets.githubusercontent.com/github-production-release-asset/123/test?sig=fixture";p.install();p.waitFor("install","installer");check(downloads==before+2,"GitHub release redirect followed and APK verified");}
  reset();try(Probe p=new Probe()){p.checked();p.a.missingInstaller=true;p.install();p.waitFor("install","error");p.a.missingInstaller=false;p.u.openDownload("retry");p.waitFor("retry","installer");}
  reset();try(Probe p=new Probe()){p.checked();pausedRead=true;p.install();p.u.destroy();Thread.sleep(180);p.noApk();check(p.u.resultFor("install").isEmpty(),"destroyed operation has no late result");}
  reset();try(Probe p=new Probe()){p.checked();android.os.SystemClock.shift=24L*60*60*1000+1;p.install();p.waitFor("install","error");p.noApk();}
- reset();try(Probe p=new Probe()){p.a.pm.permission=false;p.checked();p.install();p.u.onPause();android.os.SystemClock.shift=300001;p.a.pm.permission=true;p.u.onResume();p.waitFor("install","error");p.noApk();}
+ reset();try(Probe p=new Probe()){p.a.pm.permission=false;p.checked();p.install();p.u.onPause();android.os.SystemClock.shift=300001;p.a.pm.permission=true;p.u.onResume();p.waitFor("install","permission");p.noApk();}
  reset();try(Probe p=new Probe()){p.checked();p.a.pm.installed.versionCode=40;p.install();p.waitFor("install","error");p.noApk();}
- System.out.println("PASS native integrated updater/provider: "+assertions+" assertions; consent auto-resume, scoped read grant, integrity/signers, private cache, background/destroy lifecycle, invalid APK and network failures.");
+ System.out.println("PASS native integrated updater/provider: "+assertions+" assertions; consent and explicit permission retry, scoped read grant, integrity/signers, private cache, background/destroy lifecycle, invalid APK and network failures.");
 }
 }'''
 with tempfile.TemporaryDirectory(prefix='salon-installer-') as directory:

@@ -60,13 +60,13 @@ final class AppUpdater {
     private final Object installLock = new Object();
     private InstallOperation activeInstall;
     private boolean resumed;
-    static final long INSTALL_TIMEOUT_MILLIS = 300000;
+    static final long INSTALL_TIMEOUT_MILLIS = 180000;
     private static final class InstallOperation {
         final String id;
         final Metadata metadata;
         final long deadline;
         volatile boolean finished;
-        boolean permissionRequested, sawPause, started, ready;
+        boolean started, ready;
         volatile Future<?> worker;
         ScheduledFuture<?> timeout;
         InstallOperation(String id, Metadata metadata) {
@@ -283,22 +283,20 @@ final class AppUpdater {
             }, INSTALL_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
         }
         if (!activity.getPackageManager().canRequestPackageInstalls()) {
-            operation.permissionRequested = true;
-            emit(id, result("permission", "Permite instalarea din Agenda Salon. La revenire, actualizarea continuă automat."));
             try {
                 activity.startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                     Uri.parse("package:" + activity.getPackageName())));
+                finishInstall(operation, "permission", "Permite instalarea din Agenda Salon, apoi revino și apasă din nou Instalează actualizarea.");
             } catch (RuntimeException unavailable) {
                 finishInstall(operation, "error", "Permisiunea de instalare nu a fost acordată. O poți activa în setările Android pentru Agenda Salon, apoi reîncearcă.");
             }
         } else startDownload(operation);
     }
 
-    // Only a user-requested, still-live update may resume after the Android permission screen.
+    // Only an already requested download may present its verified result after returning to the foreground.
     void onPause() {
         synchronized (installLock) {
             resumed = false;
-            if (activeInstall != null && activeInstall.permissionRequested) activeInstall.sawPause = true;
         }
     }
 
@@ -306,11 +304,7 @@ final class AppUpdater {
         InstallOperation operation;
         synchronized (installLock) { resumed = true; operation = activeInstall; }
         if (destroyed || operation == null || operation.finished) return;
-        if (operation.permissionRequested && operation.sawPause) {
-            operation.permissionRequested = false;
-            if (activity.getPackageManager().canRequestPackageInstalls()) startDownload(operation);
-            else finishInstall(operation, "error", "Instalarea nu a fost permisă. Aplicația și datele rămân neschimbate; poți reîncerca.");
-        } else if (operation.ready) launchInstaller(operation);
+        if (operation.ready) launchInstaller(operation);
     }
 
     private boolean finishInstall(InstallOperation operation, String status, String message) {

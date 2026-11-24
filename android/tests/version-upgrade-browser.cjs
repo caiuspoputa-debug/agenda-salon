@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{spawn}=require('node:child_process'),readline=require('node:readline'),{chromium}=require('playwright');
-const assets=path.resolve(__dirname,'../app/src/main/assets'),out=path.resolve(__dirname,'../../../salon-release-1.1.5');
+const assets=path.resolve(__dirname,'../app/src/main/assets'),out=path.resolve(__dirname,'../../../salon-release-1.1.6');
 const previous=path.join(out,'previous-assets');
 require(path.join(assets,'app.js'));const C=global.SalonCore,S=require(path.join(assets,'sync.js'));
 const clone=x=>JSON.parse(JSON.stringify(x)),KEY='atelier.app-updates.v1',HOME='https://appassets.androidplatform.net/assets/index.html';
@@ -48,6 +48,6 @@ function call(body){return new Promise(resolve=>{const id=++sequence;pending.set
    const reopen=await open('new',final,role,width);assert.deepEqual(JSON.parse(await reopen.page.evaluate(()=>__disk.state)),state);await reopen.context.close();
   }
   const backup=(await call({path:'/verify-backup'})).body;assert.equal(backup.restorable,true);assert.deepEqual(errors,[]);assert(requests.every(r=>!r.bootstrap&&r.endpoint!=='/v1/register'));
-  fs.writeFileSync(path.join(out,'Upgrade-HA-browser.json'),JSON.stringify({passed:true,cases:result,backupRestorable:true,noNewRegistration:true,noServerBootstrap:true,errors,requests,physicalDeviceTested:false},null,2));console.log('PASS 1.1.4 APK UI -> 1.1.5 UI: both roles, exact agenda/settings/HA credentials/outbox, updater preferences, real HA Store sync and backup restore');
+  fs.writeFileSync(path.join(out,'Upgrade-HA-browser.json'),JSON.stringify({passed:true,cases:result,backupRestorable:true,noNewRegistration:true,noServerBootstrap:true,errors,requests,physicalDeviceTested:false},null,2));console.log('PASS 1.1.5 APK UI -> 1.1.6 UI: both roles, exact agenda/settings/HA credentials/outbox, updater preferences, real HA Store sync and backup restore');
  }finally{await browser.close();worker.stdin.end();}
 })().catch(e=>{console.error(e);process.exitCode=1;worker.stdin.end();});

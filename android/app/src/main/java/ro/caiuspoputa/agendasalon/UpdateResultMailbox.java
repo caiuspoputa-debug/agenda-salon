@@ -46,7 +46,7 @@ final class UpdateResultMailbox {
             encoded = "{\"status\":\"error\",\"message\":\"Răspunsul actualizării nu este valid. Reîncearcă.\"}";
             status = "error";
         }
-        save(id, ("downloading".equals(status) || "permission".equals(status)) ? "progress" : "terminal", encoded);
+        save(id, "downloading".equals(status) ? "progress" : "terminal", encoded);
         return true;
     }
 
