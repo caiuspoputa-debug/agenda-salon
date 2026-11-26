@@ -55,33 +55,28 @@ public final class NativeUpdatePolicyTest {
         checks++;
         for (String invalid : new String[]{"", digest + "a", digest.substring(1), digest.substring(1) + "g"})
             rejected(() -> UpdatePolicy.digest(invalid));
-        // Installation requires a successful recent check and a strictly newer release.
+        // Download requires a successful recent check and a strictly newer release.
         String handoff = UpdatePolicy.REPOSITORY + "/releases/download/v1.0.19/Agenda-Salon-1.0.19.apk";
-        allowed(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 1000));
+        allowed(() -> UpdatePolicy.downloadUrl(handoff, "1.0.19", 30, 29, 1000, 1000));
         if (!handoff
-                .equals(UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 1000).toString()))
-            throw new AssertionError("Installer must use the validated GitHub Release, like Frizerie");
+                .equals(UpdatePolicy.downloadUrl(handoff, "1.0.19", 30, 29, 1000, 1000).toString()))
+            throw new AssertionError("Browser must use the validated GitHub Release, like Frizerie");
         checks++;
-        allowed(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 1000 + 24L * 60 * 60 * 1000));
-        rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 1001 + 24L * 60 * 60 * 1000));
-        rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 29, 29, 1000, 1001));
-        rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 28, 29, 1000, 1001));
-        rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 0, 1000, 1001));
-        rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, -1, 1001));
-        rejected(() -> UpdatePolicy.installUrl(handoff, "1.0.19", 30, 29, 1000, 999));
+        allowed(() -> UpdatePolicy.downloadUrl(handoff, "1.0.19", 30, 29, 1000, 1000 + 24L * 60 * 60 * 1000));
+        rejected(() -> UpdatePolicy.downloadUrl(handoff, "1.0.19", 30, 29, 1000, 1001 + 24L * 60 * 60 * 1000));
+        rejected(() -> UpdatePolicy.downloadUrl(handoff, "1.0.19", 29, 29, 1000, 1001));
+        rejected(() -> UpdatePolicy.downloadUrl(handoff, "1.0.19", 28, 29, 1000, 1001));
+        rejected(() -> UpdatePolicy.downloadUrl(handoff, "1.0.19", 30, 0, 1000, 1001));
+        rejected(() -> UpdatePolicy.downloadUrl(handoff, "1.0.19", 30, 29, -1, 1001));
+        rejected(() -> UpdatePolicy.downloadUrl(handoff, "1.0.19", 30, 29, 1000, 999));
         for (String invalid : new String[]{handoff.replace("https:", "http:"), handoff.replace("agenda-salon", "other"),
                 handoff + "?redirect=https://example.com", handoff + "#fragment", "content://ro.caiuspoputa.agendasalon.updates/apk/x.apk",
                 "file:///sdcard/Download/update.apk", "intent://github.com/#Intent;end", handoff.replace("1.0.19.apk", "1.0.18.apk")})
-            rejected(() -> UpdatePolicy.installUrl(invalid, "1.0.19", 30, 29, 1000, 1001));
+            rejected(() -> UpdatePolicy.downloadUrl(invalid, "1.0.19", 30, 29, 1000, 1001));
         String direct = "https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.5/Agenda-Salon-1.1.5.apk";
         rejected(() -> UpdatePolicy.networkUrl(direct));
         for (String invalid : new String[]{direct+"?x=1",direct+"#x",direct.replace("https:","http:"),direct.replace("1.1.5.apk","1.1.4.apk"),direct.replace("/salon/","/other/"),direct.replace(".apk","%2eapk"),direct.replace("/1.1.5/","/../1.1.5/"),direct.replace("github.io/","github.io:443/"),direct.replace("https://","https://user@")})
             rejected(() -> UpdatePolicy.networkUrl(invalid));
-        allowed(() -> UpdatePolicy.verifyIntegrity(10,10,digest,digest.toLowerCase(java.util.Locale.ROOT)));
-        rejected(() -> UpdatePolicy.verifyIntegrity(10,9,digest,digest));
-        rejected(() -> UpdatePolicy.verifyIntegrity(10,11,digest,digest));
-        rejected(() -> UpdatePolicy.verifyIntegrity(10,10,digest,"b".repeat(64)));
-        rejected(() -> UpdatePolicy.verifyIntegrity(UpdatePolicy.MAX_APK_BYTES+1,UpdatePolicy.MAX_APK_BYTES+1,digest,digest));
         System.out.println("Native update policy: " + checks + " checks passed.");
     }
 }

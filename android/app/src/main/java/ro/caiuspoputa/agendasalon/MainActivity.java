@@ -160,8 +160,8 @@ public final class MainActivity extends Activity {
                 if (request.isForMainFrame() && (isHome(uri)
                         || !originCaptured && !originComplete && isLegacyHome(uri))) return false;
                 if (request.isForMainFrame() && request.hasGesture()
-                        && ("https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.6/Agenda-Salon-Instalare.pdf".equals(uri.toString())
-                        || "https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.6/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
+                        && ("https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.7/Agenda-Salon-Instalare.pdf".equals(uri.toString())
+                        || "https://caiuspoputa-debug.github.io/aplicatii/downloads/salon/1.1.7/Agenda-Salon-Utilizare.pdf".equals(uri.toString()))) {
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, uri));
                     } catch (ActivityNotFoundException e) {
@@ -209,12 +209,6 @@ public final class MainActivity extends Activity {
         // onResume also runs after an onCreate redirected without initialization.
         if (!activationReady || destroyed || isFinishing()) return;
         if (redirectForActivation()) return;
-        if (appUpdater != null) appUpdater.onResume();
-    }
-
-    @Override protected void onPause() {
-        if (appUpdater != null) appUpdater.onPause();
-        super.onPause();
     }
 
     @Override protected void onNewIntent(Intent intent) {
@@ -420,7 +414,7 @@ public final class MainActivity extends Activity {
             return destroyed || updater == null ? "" : updater.resultFor(requestId);
         }
 
-        @JavascriptInterface public void openAppUpdate(String requestId) {
+        @JavascriptInterface public void openAppUpdateDownload(String requestId) {
             final AppUpdater updater = appUpdater;
             if (destroyed || updater == null) return;
             updater.queueResult(requestId);

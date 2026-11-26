@@ -39,18 +39,12 @@ final class UpdatePolicy {
         return networkUrl(value);
     }
 
-    static URL installUrl(String value, String version, long metadataCode, long installedCode,
+    static URL downloadUrl(String value, String version, long metadataCode, long installedCode,
                           long checkedAt, long now) throws Exception {
         if (metadataCode <= installedCode || installedCode <= 0 || checkedAt < 0 || now < checkedAt
                 || now - checkedAt > 24L * 60 * 60 * 1000)
-            throw new IllegalArgumentException("A fresh newer release is required before installation");
+            throw new IllegalArgumentException("A fresh newer release is required before download");
         return apkUrl(value, version);
-    }
-
-    static void verifyIntegrity(long expectedSize, long actualSize, String expectedDigest, String actualDigest) {
-        if (expectedSize <= 0 || expectedSize > MAX_APK_BYTES || actualSize != expectedSize
-                || !digest(expectedDigest).equals(digest(actualDigest)))
-            throw new IllegalArgumentException("Update size or SHA-256 mismatch");
     }
 
     static URL networkUrl(String value) throws Exception {

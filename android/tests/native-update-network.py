@@ -24,6 +24,9 @@ callback = re.search(r'    private void deliverAppUpdateResult\([^\n]+\) \{\n.*?
 assert callback, 'Actual native callback method missing'
 
 stubs = {
+'androidx/browser/customtabs/CustomTabsClient.java': '''package androidx.browser.customtabs;public class CustomTabsClient {
+public static String provider="fixture.browser";public static String getPackageName(android.app.Activity activity,java.util.List<String> candidates){return provider;}
+}''',
 'android/app/Activity.java': '''package android.app;public class Activity {
 public final android.content.pm.PackageManager pm=new android.content.pm.PackageManager();
 public final java.util.concurrent.ExecutorService ui=java.util.concurrent.Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"fixture-android-ui");t.setDaemon(true);return t;});
@@ -33,7 +36,7 @@ public void runOnUiThread(Runnable r){ui.execute(r);}public void startActivity(a
 'android/content/Intent.java': '''package android.content;public class Intent {
 public static final String ACTION_VIEW="VIEW",CATEGORY_BROWSABLE="BROWSABLE";public static final int FLAG_GRANT_READ_URI_PERMISSION=1;
 public Intent(String a){}public Intent(String a,android.net.Uri uri){}public Intent setDataAndType(android.net.Uri uri,String mime){return this;}
-public Intent addCategory(String c){return this;}public void setClipData(ClipData data){}public Intent addFlags(int flags){return this;}
+public void setClipData(ClipData data){}public Intent addFlags(int flags){return this;}public Intent addCategory(String category){return this;}public Intent setPackage(String provider){return this;}
 }''',
 'android/content/ClipData.java': '''package android.content;public class ClipData {public static ClipData newRawUri(String name,android.net.Uri uri){return new ClipData();}}''',
 'android/content/pm/PackageManager.java': '''package android.content.pm;public class PackageManager {
@@ -42,7 +45,7 @@ public PackageInfo getPackageInfo(String name,int flags){return installed;}publi
 public boolean canRequestPackageInstalls(){throw new AssertionError("No install permission request during metadata check");}
 }''',
 'android/content/pm/PackageInfo.java': '''package android.content.pm;public class PackageInfo {
-public String packageName="ro.caiuspoputa.agendasalon",versionName="1.0.19";public int versionCode=30;
+public String packageName="ro.caiuspoputa.agendasalon",versionName="5.0.5";public int versionCode=11;
 public ApplicationInfo applicationInfo=new ApplicationInfo();public Signature[] signatures={new Signature()};public SigningInfo signingInfo=new SigningInfo();
 public long getLongVersionCode(){return versionCode;}
 }''',
@@ -53,10 +56,6 @@ public long getLongVersionCode(){return versionCode;}
 'android/os/Build.java': 'package android.os;public class Build {public static class VERSION {public static int SDK_INT=36;}}',
 'android/os/SystemClock.java': 'package android.os;public class SystemClock {public static long elapsedRealtime(){return System.nanoTime()/1000000;}}',
 'android/provider/Settings.java': 'package android.provider;public class Settings {public static final String ACTION_MANAGE_UNKNOWN_APP_SOURCES="INSTALL_PERMISSION";}',
-'ro/caiuspoputa/agendasalon/UpdateApkProvider.java': '''package ro.caiuspoputa.agendasalon;final class UpdateApkProvider {
-static final String MIME="application/vnd.android.package-archive";static java.io.File directory(android.app.Activity a){throw new AssertionError("No APK download during metadata check");}
-static android.net.Uri uri(android.app.Activity a,String digest){throw new AssertionError("No installer URI during metadata check");}}
-''',
 'ro/caiuspoputa/agendasalon/NativeUpdateNetworkTest.java': '''package ro.caiuspoputa.agendasalon;
 import org.json.JSONObject;import java.util.concurrent.*;import java.net.*;import java.io.*;
 public final class NativeUpdateNetworkTest {
@@ -81,7 +80,7 @@ System.out.println(new JSONObject().put("mode",mode).put("installedCode",install
 '''
 }
 
-with tempfile.TemporaryDirectory(prefix='salon-native-update-network-') as directory:
+with tempfile.TemporaryDirectory(prefix='frizerie-native-update-network-') as directory:
     root = Path(directory)
     for name, content in stubs.items():
         target = root / name
@@ -100,16 +99,12 @@ with tempfile.TemporaryDirectory(prefix='salon-native-update-network-') as direc
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const fixture=JSON.parse(fs.readFileSync(0,'utf8'));const {create}=require(process.argv[1]);
 const win={navigator:{onLine:true},addEventListener(){},removeEventListener(){}};
-const bridge={appUpdateInfo:()=>JSON.stringify({versionCode:fixture.installedCode,versionName:'1.0.19'}),checkAppUpdate:id=>assert.equal(id,'app-update-0-1'),openAppUpdate:()=>{throw Error('No install during check');}};
+const bridge={appUpdateInfo:()=>JSON.stringify({versionCode:fixture.installedCode,versionName:'5.0.5'}),checkAppUpdate:id=>assert.equal(id,'app-update-0-1'),openAppUpdateDownload:()=>{throw Error('No download during check');}};
 const manager=create({window:win,Android:bridge,now:()=>0,setTimeout:()=>1,clearTimeout:()=>{}});manager.start();manager.check();assert.equal(manager.getStatus().busy,true);
 vm.runInNewContext(fixture.script,{window:win});const status=manager.getStatus();assert.equal(status.busy,false);assert.equal(status.status,fixture.mode);manager.destroy();
 console.log(JSON.stringify({mode:fixture.mode,elapsedMs:fixture.elapsedMs,status:status.status,pendingCleared:!status.busy,message:status.message,version:status.available?.versionName}));
 '''
-        checked = subprocess.run(['C:/Program Files/nodejs/node.exe', '--max-old-space-size=128', '-e', script, str(base / 'app/src/main/assets/updates.js')], input=json.dumps(result), text=True, encoding='utf-8', capture_output=True, timeout=10)
-        if checked.returncode:
-            print('Native fixture:', json.dumps(result, ensure_ascii=False), file=sys.stderr)
-            print(checked.stderr, file=sys.stderr)
-            checked.check_returncode()
+        checked = subprocess.run(['C:/Program Files/nodejs/node.exe', '--max-old-space-size=128', '-e', script, str(base / 'app/src/main/assets/updates.js')], input=json.dumps(result), check=True, text=True, encoding='utf-8', capture_output=True, timeout=10)
         results.append(json.loads(checked.stdout))
         print('PASS actual AppUpdater.check + Android16 JSON + MainActivity callback + JS pending state: ' + checked.stdout.strip(), flush=True)
     print('No APK download, installation, credentials or business/cloud data accessed.', flush=True)

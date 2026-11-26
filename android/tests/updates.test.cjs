@@ -5,13 +5,13 @@ function setup({stored,blocked=false,online=true,storageError=false,notify,initi
  let now=initialNow,form=blocked,serial=0;const timers=new Map(),events=new Map(),calls=[],writes=[],notifications=[];
  const win={navigator:{onLine:online},addEventListener:(name,fn)=>events.set(name,fn),removeEventListener:name=>events.delete(name)};
  const storage={getItem(){if(storageError)throw Error('SecurityError');return stored;},setItem(key,value){if(storageError)throw Error('QuotaExceeded');writes.push({key,value});}};
- const bridge={appUpdateInfo:()=>JSON.stringify({versionCode:30,versionName:'1.0.19'}),checkAppUpdate:id=>calls.push({kind:'check',id}),openAppUpdate:id=>calls.push({kind:'open',id})};
+ const bridge={appUpdateInfo:()=>JSON.stringify({versionCode:11,versionName:'5.0.5'}),checkAppUpdate:id=>calls.push({kind:'check',id}),openAppUpdateDownload:id=>calls.push({kind:'download',id})};
  const manager=create({window:win,Android:bridge,storage,now:()=>now,hasOpenForm:()=>form,notify:notify||((text)=>notifications.push(text)),setTimeout:(fn,delay)=>{const id=++serial;timers.set(id,{fn,delay});return id;},clearTimeout:id=>timers.delete(id)});manager.start();
  function reply(payload,id=calls.at(-1)?.id){win.onAppUpdateResult(id,payload);}
  function run(delay){const entry=[...timers].find(([,value])=>value.delay===delay);assert.ok(entry,'scheduled '+delay);timers.delete(entry[0]);entry[1].fn();}
  return {manager,win,calls,writes,notifications,timers,reply,run,advance:value=>now+=value,setNow:value=>now=value,setForm:value=>form=value,bridge,events};
 }
-const available={status:'available',versionCode:31,versionName:'1.0.20',notes:'Calendar îmbunătățit'};
+const available={status:'available',versionCode:12,versionName:'5.0.6',notes:'Calendar îmbunătățit'};
 test('update preference is separate, automatic by default, and tolerant of damaged storage',()=>{
  for(const raw of [undefined,'{','null','42'])assert.deepEqual(preferences(raw),{automatic:true,lastCheck:0,deferDay:''});
  assert.deepEqual(preferences('{"automatic":false,"lastCheck":42}'),{automatic:false,lastCheck:42,deferDay:''});
@@ -20,7 +20,7 @@ test('update preference is separate, automatic by default, and tolerant of damag
 });
 test('automatic check is once per day and never starts installation',()=>{
  const s=setup();s.run(1500);assert.equal(s.calls.length,1);assert.equal(s.calls[0].kind,'check');assert.equal(s.manager.getStatus().busy,true);
- s.reply(available);s.run(30000);assert.equal(s.calls.length,1);assert.equal(s.manager.getStatus().available.versionName,'1.0.20');
+ s.reply(available);s.run(30000);assert.equal(s.calls.length,1);assert.equal(s.manager.getStatus().available.versionName,'5.0.6');
  s.advance(86400000);s.run(30000);assert.equal(s.calls.length,1);s.events.get('focus')();assert.equal(s.calls.length,2);assert.ok(s.calls.every(call=>call.kind==='check'));
  assert.ok(s.writes.every(write=>write.key==='atelier.app-updates.v1'));
 });
@@ -38,17 +38,17 @@ test('duplicate presses and stale responses cannot replace the current result',(
  s.reply(available,first);s.reply({status:'current'},first);assert.equal(s.manager.getStatus().status,'available');s.manager.check();s.reply({status:'current'},first);assert.equal(s.manager.getStatus().busy,true);s.reply({status:'current'});assert.equal(s.manager.getStatus().available,null);
 });
 test('a release that is not newer is treated as current',()=>{
- const s=setup();s.manager.check();s.reply({...available,versionCode:30,versionName:'1.0.19'});assert.equal(s.manager.getStatus().status,'current');assert.equal(s.manager.getStatus().available,null);
+ const s=setup();s.manager.check();s.reply({...available,versionCode:11,versionName:'5.0.5'});assert.equal(s.manager.getStatus().status,'current');assert.equal(s.manager.getStatus().available,null);
 });
 test('check network failure and timeout allow retry without download',()=>{
- const s=setup();s.manager.check();s.reply({status:'error',message:'Fără conexiune'});assert.equal(s.manager.getStatus().busy,false);s.manager.check();s.run(20000);assert.equal(s.manager.getStatus().status,'error');assert.equal(s.manager.getStatus().busy,false);s.manager.check();assert.equal(s.calls.length,3);assert.equal(s.calls.filter(call=>call.kind==='open').length,0);
+ const s=setup();s.manager.check();s.reply({status:'error',message:'Fără conexiune'});assert.equal(s.manager.getStatus().busy,false);s.manager.check();s.run(20000);assert.equal(s.manager.getStatus().status,'error');assert.equal(s.manager.getStatus().busy,false);s.manager.check();assert.equal(s.calls.length,3);assert.equal(s.calls.filter(call=>call.kind==='download').length,0);
 });
 test('malformed response is rejected without accepting update data',()=>{
  const s=setup();s.manager.check();s.reply({...available,versionName:'<script>alert(1)</script>'});assert.equal(s.manager.getStatus().status,'error');assert.equal(s.manager.getStatus().available,null);
  for(const raw of [null,[],{},'{',' '.repeat(16001),{status:'available',versionCode:2,versionName:'abc'}])assert.throws(()=>result(raw));
 });
-test('unknown callback types cannot accidentally finish a check',()=>{
- const s=setup();s.manager.check();s.reply({status:'installer'});assert.equal(s.manager.getStatus().busy,true);s.reply({status:'current'});assert.equal(s.manager.getStatus().status,'current');
+test('a browser callback cannot accidentally finish a version check',()=>{
+ const s=setup();s.manager.check();s.reply({status:'browser'});assert.equal(s.manager.getStatus().busy,true);s.reply({status:'current'});assert.equal(s.manager.getStatus().status,'current');
 });
 test('destroyed controller cannot start another check from queued wake or old callbacks',()=>{
  const s=setup();const callback=s.win.onAppUpdateResult;s.manager.check();s.manager.destroy();callback(s.calls[0].id,available);s.run(1500);assert.equal(s.calls.length,1);assert.equal(s.manager.getStatus().available,null);assert.equal(s.win.onAppUpdateResult,undefined);
@@ -66,7 +66,7 @@ test('local calendar rollover works across both 23-hour and 25-hour DST days',()
  const spring=new Date(2026,2,29,0).getTime(),fall=new Date(2026,9,25,0).getTime();assert.equal((nextDayAt(spring)-dayStartAt(spring))/3600000,23);assert.equal((nextDayAt(fall)-dayStartAt(fall))/3600000,25);
 });
 test('later persists for the rest of the local day while manual checks remain available',()=>{
- const now=new Date(2026,10,5,7,30).getTime(),s=setup({stored:JSON.stringify({automatic:true,lastCheck:0,deferDay:localDay(now)}),initialNow:now});s.run(1500);assert.equal(s.calls.length,0);s.manager.check();assert.equal(s.calls.length,1);s.reply(available);assert.equal(s.manager.getStatus().available.versionCode,31);
+ const now=new Date(2026,10,5,7,30).getTime(),s=setup({stored:JSON.stringify({automatic:true,lastCheck:0,deferDay:localDay(now)}),initialNow:now});s.run(1500);assert.equal(s.calls.length,0);s.manager.check();assert.equal(s.calls.length,1);s.reply(available);assert.equal(s.manager.getStatus().available.versionCode,12);
  s.setNow(new Date(2026,10,6,7,30).getTime());s.events.get('focus')();assert.equal(s.calls.length,2);
 });
 test('failed metadata does not consume the day and retries after a bounded backoff',()=>{
@@ -77,17 +77,15 @@ test('a failed fresh check cannot offer stale metadata from an earlier available
  const s=setup();s.manager.check();s.reply(available);assert.ok(s.manager.getStatus().available);s.manager.check();assert.equal(s.manager.getStatus().available,null);s.reply({status:'error'});assert.equal(s.manager.getStatus().available,null);assert.equal(s.manager.getStatus().status,'error');
 });
 
-test('native install responses are bounded; obsolete browser response is rejected',()=>{
- for(const status of ['downloading','permission','installer']){
-  assert.deepEqual(result({status,message:'Actualizare Android'}),{status,message:'Actualizare Android'});
-  assert.equal(result(JSON.stringify({status,message:'x'.repeat(1100)})).message.length,1000);
- }
- for(const status of ['browser','silent-install'])assert.throws(()=>result({status}));
+test('browser handoff is bounded and obsolete internal installer statuses are rejected',()=>{
+ assert.deepEqual(result({status:'browser',message:'Deschis în browser'}),{status:'browser',message:'Deschis în browser'});
+ assert.equal(result(JSON.stringify({status:'browser',message:'x'.repeat(1100)})).message.length,1000);
+ for(const status of ['downloading','permission','installer'])assert.throws(()=>result({status}));
 });
-test('installer progress cannot replace metadata or start installation during an automatic check',()=>{
+test('browser responses cannot replace metadata or open a browser during an automatic check',()=>{
  const s=setup();s.run(1500);const id=s.calls[0].id;
- for(const status of ['downloading','permission','installer']){s.reply({status},id);assert.equal(s.manager.getStatus().busy,true);assert.equal(s.writes.length,0);assert.equal(s.calls.filter(call=>call.kind==='open').length,0);}
- s.reply(available);assert.equal(s.manager.getStatus().status,'available');assert.equal(s.calls.filter(call=>call.kind==='open').length,0);
+ s.reply({status:'browser'},id);assert.equal(s.manager.getStatus().busy,true);assert.equal(s.writes.length,0);assert.equal(s.calls.filter(call=>call.kind==='download').length,0);
+ s.reply(available);assert.equal(s.manager.getStatus().status,'available');assert.equal(s.calls.filter(call=>call.kind==='download').length,0);
 });
 
 test('manual current result is announced once without a popup or stale callback notification',()=>{
@@ -102,7 +100,7 @@ test('manual server error and default error are announced with an unlocked check
  const s=setup();s.manager.check();s.reply({status:'error',message:'GitHub nu răspunde. Reîncearcă.'});
  assert.deepEqual(s.notifications,['GitHub nu răspunde. Reîncearcă.']);assert.equal(s.manager.getStatus().busy,false);
  s.manager.check();s.reply({status:'error'});assert.match(s.notifications[1],/nu a putut fi verificată/);assert.equal(s.manager.getStatus().busy,false);
- assert.equal(s.calls.some(call=>call.kind==='open'),false);
+ assert.equal(s.calls.some(call=>call.kind==='download'),false);
 });
 
 test('manual offline check announces the reason without starting a bridge or writing data',()=>{
@@ -131,7 +129,7 @@ test('automatic current, errors, malformed replies and timeout remain silent',()
 
 test('available release keeps popup flow silent, while an older release announces current',()=>{
  const s=setup();s.manager.check();s.reply(available);assert.deepEqual(s.notifications,[]);assert.equal(s.manager.getStatus().status,'available');
- s.manager.check();s.reply({...available,versionCode:30,versionName:'1.0.19'});assert.deepEqual(s.notifications,['Ai cea mai nouă versiune disponibilă.']);assert.equal(s.manager.getStatus().status,'current');
+ s.manager.check();s.reply({...available,versionCode:11,versionName:'5.0.5'});assert.deepEqual(s.notifications,['Ai cea mai nouă versiune disponibilă.']);assert.equal(s.manager.getStatus().status,'current');
 });
 
 test('a notification failure cannot leave a completed check busy or accept destroyed callbacks',()=>{

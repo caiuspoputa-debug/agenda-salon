@@ -6,13 +6,14 @@ android {
         applicationId 'ro.caiuspoputa.agendasalon'
         minSdk 26
         targetSdk 36
-        versionCode 41
-        versionName '1.1.6'
+        versionCode 42
+        versionName '1.1.7'
     }
     buildTypes { release { minifyEnabled false } }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
 }
 dependencies {
+    implementation 'androidx.browser:browser:1.10.0'
     implementation 'androidx.webkit:webkit:1.18.0'
     // Match the transitive AndroidX baseline already used by Agenda Frizerie.
     constraints {

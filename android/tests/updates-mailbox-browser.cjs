@@ -16,13 +16,12 @@ const nav=(p,name)=>p.getByRole('navigation',{name:'Navigare principală'}).getB
   await context.addInitScript(({state,queued})=>{
    localStorage.setItem('atelier.app-updates.v1',JSON.stringify({automatic:false,lastCheck:0}));window.__state=JSON.stringify(Object.fromEntries(Object.entries(state).filter(([k])=>k!=='fixtureDevice')));window.__device=JSON.stringify(state.fixtureDevice);window.__calls=[];window.__writes=0;window.__mail=Object.create(null);window.__revision=0;window.__getterReads=0;window.__getterOverride='';
    window.__record=(id,stage,result)=>{__mail[id]=JSON.stringify({requestId:id,stage,revision:++__revision,...(result?{result}:{})});};
-   window.Android={load:()=>__state,loadDevice:()=>__device,saveLocal:()=>{__writes++;throw Error('Updater must not save business data');},hasUpdateBackup:()=>false,appUpdateInfo:()=>JSON.stringify({versionCode:30,versionName:'1.0.19'}),checkAppUpdate:id=>{__calls.push({id,kind:'check'});__record(id,queued?'queued':'started');},appUpdateResult:id=>{__getterReads++;return __getterOverride||__mail[id]||'';},openAppUpdate:id=>{__calls.push({id,kind:'open'});__record(id,'started');}};
-   
+   window.Android={load:()=>__state,loadDevice:()=>__device,saveLocal:()=>{__writes++;throw Error('Updater must not save business data');},hasUpdateBackup:()=>false,appUpdateInfo:()=>JSON.stringify({versionCode:42,versionName:'1.1.7'}),checkAppUpdate:id=>{__calls.push({id,kind:'check'});__record(id,queued?'queued':'started');},appUpdateResult:id=>{__getterReads++;return __getterOverride||__mail[id]||'';},openAppUpdateDownload:id=>{__calls.push({id,kind:'download'});__record(id,'started');}};
   },{state:initial,queued});
   const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));await p.clock.install({time:new Date('2026-11-05T18:00:00.000Z')});await p.goto(origin);await p.waitForSelector('.shell');await p.addStyleTag({content:'*{animation:none!important;transition:none!important}'});await nav(p,'Setări').click();
   const card=p.locator('.app-updates'),original=await p.evaluate(()=>({state:__state,device:__device,writes:__writes}));
   async function start(){await card.getByRole('button',{name:'Verifică acum',exact:true}).click();return await p.evaluate(()=>__calls.at(-1).id);}
-  async function retain(id,payload){await p.evaluate(({id,payload})=>__record(id,payload.status==='downloading'?'progress':'terminal',payload),{id,payload});}
+  async function retain(id,payload){await p.evaluate(({id,payload})=>__record(id,'terminal',payload),{id,payload});}
   async function intact(){assert.deepEqual(await p.evaluate(()=>({state:__state,device:__device,writes:__writes})),original);assert.deepEqual(errors,[]);assert.deepEqual(external,[]);}
   return{p,context,card,start,retain,intact};
  }
@@ -38,7 +37,7 @@ const nav=(p,name)=>p.getByRole('navigation',{name:'Navigare principală'}).getB
     const {p}=f,id=await f.start();await nav(p,'Clienți').click();await p.getByRole('button',{name:'Adaugă client',exact:true}).click();await p.getByLabel('Nume client *',{exact:true}).fill('Ciornă de test');await p.getByLabel('Observații',{exact:true}).fill('Date nesalvate păstrate');
     const draft=await p.locator('#modal-root input,#modal-root textarea').evaluateAll(nodes=>nodes.map(n=>n.value));await p.evaluate(()=>window.__focused=document.activeElement);await f.retain(id,available);await p.clock.fastForward(251);
     assert.equal(await p.locator('.app-update-prompt').count(),0);assert.deepEqual(await p.locator('#modal-root input,#modal-root textarea').evaluateAll(nodes=>nodes.map(n=>n.value)),draft);assert.equal(await p.evaluate(()=>document.activeElement===__focused),true);
-    await p.getByRole('button',{name:'Închide',exact:true}).last().click();await p.locator('.app-update-prompt').waitFor();assert.equal(await p.locator('.app-update-prompt').count(),1);await p.locator('.app-update-prompt').getByRole('button',{name:'Mai târziu',exact:true}).click();assert.equal(await p.evaluate(()=>__calls.filter(c=>c.kind==='open').length),0);
+    await p.getByRole('button',{name:'Închide',exact:true}).last().click();await p.locator('.app-update-prompt').waitFor();assert.equal(await p.locator('.app-update-prompt').count(),1);await p.locator('.app-update-prompt').getByRole('button',{name:'Mai târziu',exact:true}).click();assert.equal(await p.evaluate(()=>__calls.filter(c=>c.kind==='download').length),0);
    });
    await scenario(width,'mailbox and push finish only once; stale request cannot finish retry',async f=>{
     const {p,card}=f,old=await f.start();await f.retain(old,error);await p.evaluate(({id,payload})=>onAppUpdateResult(id,payload),{id:old,payload:error});await p.clock.fastForward(251);assert.equal(await card.getByRole('button',{name:'Verifică acum',exact:true}).isEnabled(),true);
@@ -50,17 +49,19 @@ const nav=(p,name)=>p.getByRole('navigation',{name:'Navigare principală'}).getB
     const {p,card}=f,id=await f.start();await p.evaluate(()=>{window.__hidden=true;Object.defineProperty(document,'hidden',{configurable:true,get:()=>__hidden});document.dispatchEvent(new Event('visibilitychange'));});await f.retain(id,current);
     await p.clock.setFixedTime(new Date('2026-11-05T18:00:21.000Z'));await p.evaluate(()=>{window.__hidden=false;document.dispatchEvent(new Event('visibilitychange'));dispatchEvent(new Event('focus'));});assert.equal(await card.locator('.app-update-status').innerText(),current.message);assert.equal(await p.locator('#toast.show').innerText(),current.message);assert.equal(await card.getByRole('button',{name:'Verifică acum',exact:true}).isEnabled(),true);await p.clock.fastForward(1000);assert.equal(await card.locator('.app-update-status').innerText(),current.message);
    });
-   await scenario(width,'Frizerie permission flow requires explicit retry and preserves progress when callbacks are lost',async f=>{
+   await scenario(width,'browser terminal uses mailbox without duplicate browser handoff',async f=>{
     const {p,card}=f,id=await f.start();await f.retain(id,available);await p.clock.fastForward(251);
-    await p.locator('.app-update-prompt').getByRole('button',{name:'Instalează',exact:true}).click();
-    const installId=await p.evaluate(()=>__calls.at(-1).id);assert.notEqual(installId,id);
-    await f.retain(installId,{status:'permission',message:'Permite instalarea, apoi apasă din nou Instalează actualizarea.'});await p.clock.fastForward(251);
-    assert.equal(await card.getByRole('button',{name:'Instalează actualizarea',exact:true}).isEnabled(),true);
-    await p.evaluate(()=>dispatchEvent(new Event('focus')));await p.clock.fastForward(1000);assert.equal(await p.evaluate(()=>__calls.filter(c=>c.kind==='open').length),1);
-    await card.getByRole('button',{name:'Instalează actualizarea',exact:true}).click();const retry=await p.evaluate(()=>__calls.at(-1).id);assert.notEqual(retry,installId);
-    await f.retain(retry,{status:'downloading',message:'Se descarcă'});await p.clock.fastForward(21000);assert.match(await card.locator('.app-update-status').innerText(),/Se descarcă/);
-    await f.retain(retry,{status:'installer',message:'Confirmă actualizarea în Android.'});await p.clock.fastForward(251);assert.match(await card.locator('.app-update-status').innerText(),/Confirmă actualizarea/);
-    assert.equal(await card.getByRole('button',{name:'Instalează actualizarea',exact:true}).isEnabled(),true);assert.equal(await p.evaluate(()=>__calls.filter(c=>c.kind==='open').length),2);
+    await p.locator('.app-update-prompt').getByRole('button',{name:'Descarcă',exact:true}).click();
+    assert.match(await card.locator('.app-update-status').innerText(),/Se deschide/);
+    await p.clock.fastForward(1000);
+    assert.equal(await p.evaluate(()=>__calls.filter(c=>c.kind==='download').length),1);
+    const downloadId=await p.evaluate(()=>__calls.at(-1).id);assert.notEqual(downloadId,id);
+    await f.retain(downloadId,{status:'browser',message:'Descărcarea a fost deschisă în browser.'});
+    await p.clock.fastForward(251);
+    assert.match(await card.locator('.app-update-status').innerText(),/deschisă în browser/);
+    assert.equal(await card.getByRole('button',{name:'Descarcă actualizarea',exact:true}).isEnabled(),true);
+    await p.evaluate(()=>dispatchEvent(new Event('focus')));
+    assert.equal(await p.evaluate(()=>__calls.filter(c=>c.kind==='download').length),1);
    });
    await scenario(width,'queued bridge timeout explains Android did not start',async f=>{
     const {p,card}=f;await f.start();await p.clock.fastForward(20001);assert.match(await card.locator('.app-update-status').innerText(),/Android nu a pornit verificarea/);assert.doesNotMatch(await card.locator('.app-update-status').innerText(),/internet/);assert.equal(await card.getByRole('button',{name:'Verifică acum',exact:true}).isEnabled(),true);assert.equal(await p.evaluate(()=>__calls.length),1);
