@@ -1,9 +1,9 @@
 {
-  "versionCode": 41,
-  "versionName": "1.1.6",
+  "versionCode": 42,
+  "versionName": "1.1.7",
   "minSdk": 26,
-  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.6/Agenda-Salon-1.1.6.apk",
-  "sha256": "bc630d0c029c00d1b3fac5c5a6beb3be34fe2907455946ea194317bf1535f5cc",
-  "size": 4829139,
-  "notes": "Actualizator Android aliniat cu Agenda Frizerie: verificare zilnică, descărcare din GitHub Releases după apăsarea butonului și confirmare Android. Dacă Android cere permisiunea de instalare, revino și apasă din nou Instalează actualizarea. Programările, setările, activarea, HA și iconul se păstrează."
+  "apkUrl": "https://github.com/caiuspoputa-debug/agenda-salon/releases/download/v1.1.7/Agenda-Salon-1.1.7.apk",
+  "sha256": "e63fd642c94a07549a7053bbd85f1e9679f102c3625dbf9354a592421ab1ee1d",
+  "size": 5186331,
+  "notes": "Verificarea zilnică și manuală rămân. Butonul Descarcă deschide browserul pentru APK-ul oficial; după descărcare, deschide fișierul și confirmă actualizarea în Android. Instalatorul intern și permisiunea de instalare au fost eliminate. Programările, istoricul, setările, logo-ul, activarea și sincronizarea HA se păstrează."
 }
